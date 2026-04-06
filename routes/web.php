@@ -1,7 +1,10 @@
 <?php
+/*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+/*Import Laravel’s core classes to handle requests and define routes easily*/
 
 /*
 |--------------------------------------------------------------------------
@@ -13,9 +16,45 @@ use Illuminate\Support\Facades\Route;
 | return view()  — response: render a Blade template from resources/views.
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', function () {
     return view('welcome');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Home Page
+|--------------------------------------------------------------------------
+| Route::get      — register a route for HTTP GET (browser address bar, links).
+| '/home'        — path: home page (nothing after the domain).
+| function ()    — closure = code that runs when this URL + method match.
+| return view()  — response: render a Blade template from resources/views.
+|--------------------------------------------------------------------------
+*/
+Route::get('/home', function () {
+    return view('home');
+});
+Route::get('/test', function () {
+    return view('test');
+});
+
+
+
+Route::view('/test', 'test');
+
+/* we can return the view file without using function and return view() by using Route::view() 
+but Use Route::get()  when we need logic and to fetch data from the database or
+we need to use the controller to handle the request
+Example where get is needed
+
+Route::get('/users', function () {
+    $users = ['Ali', 'John'];
+    return view('users', compact('users'));
+});
+
+👉 You cannot do this with Route::view() ❌
+    */
+
 
 /*
 |--------------------------------------------------------------------------
@@ -89,5 +128,5 @@ Route::get('/search', function (Request $request) {
 |--------------------------------------------------------------------------
 */
 Route::get('/hello/{name}', function (string $name) {
-    return '<h1>Hello, '.e($name).'</h1><p><a href="/">Back home</a></p>';
+    return '<h1>Hello, ' . e($name) . '</h1><p><a href="/">Back home</a></p>';
 })->name('hello');
