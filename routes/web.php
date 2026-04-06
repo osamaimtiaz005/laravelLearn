@@ -3,8 +3,58 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use League\Flysystem\UrlGeneration\PrefixPublicUrlGenerator;
 
-/*Import Laravel’s core classes to handle requests and define routes easily*/
+/*Import Laravel’s core classes to handle requests and define routes easily
+🔹 1. What is Route?
+
+👉 Route is a class
+
+A class = blueprint / template for something
+
+Think like this:
+class Route {
+   // functions inside
+}
+
+👉 Laravel already created this class for you
+
+🔹 2. What is :: (double colon)?
+
+👉 This is called:
+
+Scope Resolution Operator
+
+(Simple meaning 👇)
+
+“Call something directly from a class (without creating object)”
+
+Example:
+Route::get()
+
+👉 Means:
+
+Call get() method from Route class
+
+*/
+
+/*
+What is this function () {}?
+
+👉 This is called:
+
+Anonymous Function (Closure)
+
+Meaning:
+
+A function without a name
+
+function () {
+    return "Hello";
+}
+
+👉 No name, just logic
+*/
 
 /*
 |--------------------------------------------------------------------------
@@ -42,9 +92,31 @@ Route::get('/test', function () {
 
 Route::view('/test', 'test');
 
-/* we can return the view file without using function and return view() by using Route::view() 
+/* we can return the view file without using function and return view() by using Route::view()
+Route::view($uri, $view, $data = []) 
+$uri is the path of the view file
+$view is the name of the view file
+$data is the data that we want to pass to the view file
+
 but Use Route::get()  when we need logic and to fetch data from the database or
 we need to use the controller to handle the request
+
+Route::get($uri, $callback);
+$uri is the path of the view file
+$callback is the function that we want to execute when the user visits the URL
+this callback can be a function or a closure or a controller method
+Option 1: Closure (function)
+Route::get('/users', function () {
+    return "Hello";
+});
+✅ Option 2: Controller
+Route::get('/users', [UserController::class, 'index']);
+
+👉 Calls:
+
+UserController -> index()
+
+
 Example where get is needed
 
 Route::get('/users', function () {
@@ -54,6 +126,69 @@ Route::get('/users', function () {
 
 👉 You cannot do this with Route::view() ❌
     */
+
+
+/*--------------------------------
+Route can have multiple methods
+Route::get($uri, $callback);
+Route::post($uri, $callback);
+Route::put($uri, $callback);
+Route::delete($uri, $callback);
+Route::patch($uri, $callback);
+Route::options($uri, $callback);
+Route::match(['get', 'post'], $uri, $callback);
+Route::any($uri, $callback);
+*/
+
+
+
+
+/*Route with Middleware
+Route::get('/dashboard', function () {
+    return "Dashboard";
+})->middleware('auth');
+*/
+
+
+
+/*✅ Route Prefix
+Route::prefix('admin')->group(function () {
+    Route::get('/users', function () {
+        return "Admin Users";
+    });
+});
+
+👉 URL becomes:
+
+/admin/users
+*/
+
+
+
+
+//  Pass Data with Routing
+
+/*
+|--------------------------------------------------------------------------
+| Pass Data to the view file with Routing
+|--------------------------------------------------------------------------
+| '/hello/Lina' — dynamic segment in the URL, not ?query=
+| {name}        — placeholder: whatever is in the URL becomes $name in the closure.
+| view('user', ['name' => $name]) — pass data to the view file
+| ['name' => $name] — array of data to pass to the view file
+|[key => value] — key is the name of the variable and value is the value of the variable
+|=> is the assignment operator
+| $name — variable name to pass to the view file
+| string $name — type hinting the variable name to pass to the view file
+ this name is mandatory to pass to the view file 
+ for optional we can use {name?} and then we can pass the value of the name in the URL
+ compact() function is used to pass multiple variables to the view file it is auto packer function that packs the variables into an array
+  just like ['name' => $name]
+|--------------------------------------------------------------------------
+*/
+Route::get('/user/{name}', function (string $name) {
+    return view('user', ['name' => $name]);
+});
 
 
 /*
