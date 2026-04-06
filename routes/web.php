@@ -190,6 +190,17 @@ Route::get('/user/{name}', function (string $name) {
     return view('user', ['name' => $name]);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Redirect Route
+|--------------------------------------------------------------------------
+| Route::redirect($uri, $destination);
+| $uri is the path of the view file
+| $destination is the path of the destination file
+|--------------------------------------------------------------------------
+*/
+Route::redirect('/user/ali', '/');
+
 
 /*
 |--------------------------------------------------------------------------
