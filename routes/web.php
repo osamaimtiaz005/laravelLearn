@@ -134,10 +134,10 @@ Route::get($uri, $callback);
 Route::post($uri, $callback);
 Route::put($uri, $callback);
 Route::delete($uri, $callback);
-Route::patch($uri, $callback);
-Route::options($uri, $callback);
-Route::match(['get', 'post'], $uri, $callback);
-Route::any($uri, $callback);
+Route::patch($uri, $callback); //Used to update PART of data
+Route::options($uri, $callback);  Browser asks: “What methods are allowed here?” Used for: CORS (Cross-Origin requests) APIs
+Route::match(['get', 'post'], $uri, $callback); Same route works for: GET (show form) and POST (submit form)
+Route::any($uri, $callback); Same route works for all methods
 */
 
 
