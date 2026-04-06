@@ -1,31 +1,25 @@
-<!-- HTML code it is view file where we can write HTML code for frontend in Laravel Framework we call this blade template file
-    and we can use Laravel specific syntax to write HTML code like {{ $variable }} to display the value of the variable in the view file
-    and we can use Laravel specific syntax to write HTML code like @if($condition) for if condition and 
-     @foreach($array as $item) to loop through the array and display the value of the variable in the view file
-    we can  render this is browser other files by adding this code in routes/web.php file
+{{-- Blade reads the whole file: @if / @foreach in comments are still parsed and need @endif.
+     @verbatim ... @endverbatim = show this block as plain text; Blade ignores @ and {{ inside. --}}
+@verbatim
+<!-- HTML code: this is a view file where we write HTML for the frontend. In Laravel we call this a Blade template.
+    We can use Laravel syntax like {{ $variable }} to print a variable, @if($condition) for conditions, and
+    @foreach($array as $item) to loop. (Inside @verbatim, these are documentation only — not executed.)
+
+    Render in the browser from routes/web.php:
     Route::get('/', function () {
         return view('welcome');
     });
-    also we can name this without .blade 
-    also we can use this in controller file by adding this code in controller file
+
+    The view name is 'welcome' (no .blade in the name). In a controller:
     class WelcomeController extends Controller {
         public function index() {
             return view('welcome');
         }
     }
-    and then we can call this controller in routes/web.php file
     Route::get('/', [WelcomeController::class, 'index']);
-    and then we can call this controller in routes/web.php file
-    controller is a file that contains the logic of the application and we can call this controller in routes/web.php file
+
+    A controller holds application logic; the route points the URL to the controller action.
 -->
-<html>
+@endverbatim
 
-<head>
-    <title>Welcome to my website</title>
-</head>
-
-<body>
-    <h1>Welcome to my website</h1>
-</body>
-
-</html>
+<h1>Welcome to my website</h1>
