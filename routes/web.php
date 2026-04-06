@@ -1,6 +1,7 @@
 <?php
 /*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use League\Flysystem\UrlGeneration\PrefixPublicUrlGenerator;
@@ -142,7 +143,6 @@ Route::any($uri, $callback); Same route works for all methods
 
 
 
-
 /*Route with Middleware
 Route::get('/dashboard', function () {
     return "Dashboard";
@@ -200,6 +200,15 @@ Route::get('/user/{name}', function (string $name) {
 |--------------------------------------------------------------------------
 */
 Route::redirect('/user/ali', '/');
+/*
+we can use the controller method in the route by using the class name and the method name in the array
+[UserController::class, 'getUser']
+UserController::class is the class name
+getUser is the method name
+*/
+
+
+Route::get('/user-controller', [UserController::class, 'getUser']);
 
 
 /*
