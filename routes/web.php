@@ -237,6 +237,14 @@ Route::get('/viewbycontroller/{name}', [UserController::class, 'getViewByControl
 
 /*
 |--------------------------------------------------------------------------
+| Admin Folder Login Page in Route
+|--------------------------------------------------------------------------
+| This method is used to return the admin login page
+|--------------------------------------------------------------------------
+*/
+Route::get('/admin/login', [UserController::class, 'getAdminLogin']);
+/*
+|--------------------------------------------------------------------------
 | Named route (custom path + name)
 |--------------------------------------------------------------------------
 | '/dashboard'   — the URL path users visit (e.g. http://127.0.0.1:8000/dashboard).

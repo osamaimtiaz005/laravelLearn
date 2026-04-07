@@ -36,6 +36,23 @@ class UserController extends Controller
     {
         return view('viewbycontroller', ['name' => $name]);
     }
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Folder Login Page
+    |--------------------------------------------------------------------------
+    | This method is used to return the admin login page
+     first we add folder name then blade file name . is used to separate the folder name and the blade file name
+     'admin.login' → maps to admin/login.blade.php
+     Dot (.) means folder structure:
+     admin → folder
+     login → file
+     so we can access the admin folder and the login blade file by using the view('admin.login')
+    |--------------------------------------------------------------------------
+    */
+    public function getAdminLogin()
+    {
+        return view('admin.login');
+    }
 }
 
 /*
