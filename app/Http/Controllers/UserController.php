@@ -24,6 +24,18 @@ class UserController extends Controller
     {
         return 'Hello ' . $name; // this is the dynamic user name that we pass in the URL with the help of {name} in url path and then we pass the value of the name in the method parameter and . dot is used to concatenate the string with the value of the name
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | View by Controller
+    |--------------------------------------------------------------------------
+    | This method is used to return the view by controller page dynamically generated from the route parameters {name} in the URL
+    |--------------------------------------------------------------------------
+    */
+    public function getViewByController(string $name)
+    {
+        return view('viewbycontroller', ['name' => $name]);
+    }
 }
 
 /*
