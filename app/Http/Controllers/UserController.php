@@ -19,6 +19,11 @@ class UserController extends Controller
     {
         return 'Osama Imtiaz ';
     }
+
+    public function getDynamicUser(string $name): string
+    {
+        return 'Hello ' . $name; // this is the dynamic user name that we pass in the URL with the help of {name} in url path and then we pass the value of the name in the method parameter and . dot is used to concatenate the string with the value of the name
+    }
 }
 
 /*

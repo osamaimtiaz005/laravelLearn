@@ -217,6 +217,15 @@ getUser is the method name
 
 Route::get('/user-controller', [UserController::class, 'getUser']);
 
+/*
+|--------------------------------------------------------------------------
+| Dynamic User Controller Method in Route
+|--------------------------------------------------------------------------
+| {name} is the dynamic user name that we pass in the URL with the help of {name} in url path and then we pass the value of the name in the method parameter
+|--------------------------------------------------------------------------
+*/
+Route::get('/dynamicUser-controller/{name}', [UserController::class, 'getDynamicUser']);
+
 
 /*
 |--------------------------------------------------------------------------
