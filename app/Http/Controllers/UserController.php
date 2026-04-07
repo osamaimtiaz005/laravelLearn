@@ -1,26 +1,35 @@
-
 <?php
 
-// <?php for php code file where we can write php code for backend in Laravel Framework we call this php code file
-namespace App\Http\Controllers; // namespace is for the path of the file
+namespace App\Http\Controllers;
 
-use Illuminate\Http\Request; // this is for import the request class from the Illuminate\Http\Request namespace
-
-class UserController extends Controller // this is  Usercontroller class  that inherit base class Controller using extends keyword and extends the Controller class from the App\Http\Controllers namespace
+/**
+ * namespace is for the path of the file
+ * UserController — handles HTTP logic for user-related routes.
+ *
+ * Flow: route → controller method → return view / JSON / string.
+ *
+ * Create controllers: php artisan make:controller UserController
+ * 
+ * We use public so Laravel can access and execute controller methods from routes
+ * 
+ */
+class UserController extends Controller
 {
-    //
-     function getUser()
-     {
-        return "Osama Imtiaz";
-     }
-
+    public function getUser(): string
+    {
+        return 'Osama Imtiaz ';
+    }
 }
 
-/*When user hits a URL:
-Controller:
-- receives request
-- runs logic
-- gets data (from DB if needed)
-- returns response (view or JSON)
+/*
+When a user hits a URL:
+- Controller receives the request
+- Runs logic / loads data (e.g. from DB)
+- Returns a response (view, JSON, redirect, etc.)
+- Types of methods in controller
+index()   → list data  
+show()    → single item  
+store()   → save data  
+update()  → update  
+delete()  → remove  
 */
-//we can  Create controller using cmd php artisan make:controller UserController

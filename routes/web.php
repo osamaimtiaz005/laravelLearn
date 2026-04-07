@@ -200,11 +200,18 @@ Route::get('/user/{name}', function (string $name) {
 |--------------------------------------------------------------------------
 */
 Route::redirect('/user/ali', '/');
+
 /*
+|--------------------------------------------------------------------------
+| Controller Method in Route
+|--------------------------------------------------------------------------
+| [Class, Method] is the callable format in PHP.
+This is a callable format in PHP. we can use the controller method in the route by using the class name and the method name in the array
 we can use the controller method in the route by using the class name and the method name in the array
 [UserController::class, 'getUser']
 UserController::class is the class name
 getUser is the method name
+|--------------------------------------------------------------------------
 */
 
 
