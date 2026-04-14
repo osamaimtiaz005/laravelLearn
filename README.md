@@ -2,7 +2,7 @@
 🔹 1. Basic PHP Symbols (used everywhere)
 $var // variable
 -> // access object method/property
-:: // static access
+:: // static access  getting static methods of class
 => // array key => value
 [] // array
 {} // block of code

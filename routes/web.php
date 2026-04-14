@@ -317,3 +317,45 @@ Route::get('/search', function (Request $request) {
 Route::get('/hello/{name}', function (string $name) {
     return '<h1>Hello, ' . e($name) . '</h1><p><a href="/">Back home</a></p>';
 })->name('hello');
+
+/*
+|--------------------------------------------------------------------------
+| Learning views (Blade demos + comments in resources/views/learn/*.blade.php)
+|--------------------------------------------------------------------------
+| Route::prefix('learn')
+|   — Registers a URI prefix: every route inside the group gets /learn/ in front
+|     (e.g. GET /learn/blade-basics).
+|
+| ->group(function () { ... })
+|   — Closes over several routes so shared attributes (prefix, middleware) stay DRY.
+|
+| Route::get($path, $callback)
+|   — Binds HTTP GET: browser visit or link; $callback runs when path + method match.
+|
+| return view('learn.blade-basics', [ ... ])
+|   — view() helper: first argument is the view name (dot = directory under resources/views).
+|   — Second argument: associative array; keys become $variable names inside the Blade file.
+|
+| Flow tied to layouts: view() renders the named Blade template; if that template
+| uses @extends('learn.layout'), Laravel composes child sections into the layout
+| before returning the final HTML response.
+|--------------------------------------------------------------------------
+*/
+Route::prefix('learn')->group(function () {
+    Route::get('/blade-basics', function () {
+        return view('learn.blade-basics', [
+            'user' => ['name' => 'Amina', 'role' => 'student'],
+        ]);
+    });
+
+    Route::get('/blade-loops-data', function () {
+        return view('learn.blade-loops-data', [
+            'tags' => ['Laravel', 'PHP', 'Blade'],
+            'orders' => [],
+        ]);
+    });
+
+    Route::get('/interview-checklist', function () {
+        return view('learn.interview-checklist');
+    });
+});
