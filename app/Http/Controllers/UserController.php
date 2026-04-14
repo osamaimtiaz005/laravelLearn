@@ -53,6 +53,22 @@ class UserController extends Controller
     {
         return view('admin.login');
     }
+    /*
+    |--------------------------------------------------------------------------
+    | Added myloop variable  which is a key value pair array  to fruits array to the view file to test the loop in the view file
+    |--------------------------------------------------------------------------
+    */
+    public function getViewArrayData()
+    {
+        return view('testblade', ['myloop' => ['apple', 'banana', 'cherry']]);
+        // myloop is the key and ['apple', 'banana', 'cherry'] is the value
+        // we can access the myloop variable in the view file by using the $myloop variable
+        // we can use the loop in the view file by using the @foreach directive
+        // @foreach($myloop as $fruit)
+        // <p>{{ $fruit }}</p>
+        // @endforeach
+        // this will loop through the myloop array and print the value of the array
+    }
 }
 
 /*

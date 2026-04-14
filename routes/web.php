@@ -237,6 +237,13 @@ Route::get('/viewbycontroller/{name}', [UserController::class, 'getViewByControl
 
 /*
 |--------------------------------------------------------------------------
+| Added myloop variable  which is a key value pair array  to fruits array to the view file to test the loop in the view file
+|--------------------------------------------------------------------------
+*/
+Route::get ('/viewArraydata', [UserController::class, 'getViewArrayData']);
+
+/*
+|--------------------------------------------------------------------------
 | Admin Folder Login Page in Route
 |--------------------------------------------------------------------------
 | This method is used to return the admin login page

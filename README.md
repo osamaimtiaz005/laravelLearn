@@ -2,7 +2,7 @@
 🔹 1. Basic PHP Symbols (used everywhere)
 $var // variable
 -> // access object method/property
-:: // static access  getting static methods of class
+:: // static access getting static methods of class
 => // array key => value
 [] // array
 {} // block of code
@@ -49,6 +49,7 @@ belongsTo()
 belongsToMany()
 
 🔹 5. Blade (View) Syntax
+Blade is template engine for executing laravel code
 
 {{ $var }} // print (safe)
 {!! $var !!} // print (unsafe)
@@ -308,7 +309,7 @@ resources → UI
 database → tables
 public → start point
 
----------------------------
+---
 
 Laravel Lifecycle (Step-by-step)
 
@@ -342,4 +343,150 @@ Laravel Lifecycle (Step-by-step)
 👉 You see the page 🎉
 
 🧠 One-line lifecycle:
-Request → Route → Middleware → Controller → Model → View → Response
+
+🔥 What is a Directive in Laravel?
+
+👉 A directive is a special instruction that starts with @
+
+🧠 Simple meaning:
+
+Directive = shortcut command for Blade
+
+🔹 Example
+@if($user)
+
+   <p>User exists</p>
+@endif
+
+👉 @if and @endif are directives
+
+🔥 What does it do?
+
+👉 Laravel converts it into normal PHP
+
+Behind the scenes:
+@if($user)
+
+becomes:
+
+<?php if($user): ?>
+
+🔹 Why use directives?
+Cleaner code ✨
+Easier to read 👀
+Less PHP syntax 😵
+🔥 Common Laravel Directives
+🔹 1. Conditional directives
+@if()
+@elseif()
+@else
+@endif
+🔹 2. Loop directives
+@foreach()
+@endforeach
+
+@for()
+@endfor
+
+@while()
+@endwhile
+🔹 3. Layout directives
+@extends('layout')
+
+@section('content')
+@endsection
+
+@yield('content')
+🔹 4. Include directives
+@include('header')
+🔹 5. Auth directives
+@auth
+@endauth
+
+@guest
+@endguest
+🔹 6. CSRF directive
+@csrf
+
+👉 Adds security token in forms 🔒
+
+🔹 7. Method directive
+@method('PUT')
+
+👉 Used for PUT/PATCH/DELETE in forms
+
+🔹 8. Raw PHP
+@php
+$a = 10;
+@endphp
+🔹 9. Escaping / output
+{{ $name }} // safe
+{!! $html !!} // unsafe
+
+🔥 What is a Custom Directive?
+
+👉 Your own @something in Blade
+
+Example:
+
+@upper('hello')
+
+👉 You define what it does 😎
+
+🔹 Step-by-step: Create Custom Directive
+✅ Step 1: Open AppServiceProvider
+
+📁 File:
+
+app/Providers/AppServiceProvider.php
+✅ Step 2: Use Blade
+use Illuminate\Support\Facades\Blade;
+✅ Step 3: Register directive
+
+Inside boot() method:
+
+public function boot()
+{
+Blade::directive('upper', function ($expression) {
+        return "<?php echo strtoupper($expression); ?>";
+});
+}
+🔥 What this means:
+'upper' → directive name
+$expression → value passed
+strtoupper() → PHP function
+🔹 Step 4: Use in Blade
+@upper('hello world')
+
+👉 Output:
+
+HELLO WORLD
+🔥 Another Example (real use)
+Date formatting
+Blade::directive('formatDate', function ($expression) {
+    return "<?php echo date('d M Y', strtotime($expression)); ?>";
+});
+Use:
+@formatDate($user->created_at)
+
+👉 Output:
+
+14 Apr 2026
+🔹 Important: $expression
+@upper('hello')
+
+👉 'hello' becomes:
+
+$expression = 'hello'
+🔹 Multiple parameters (advanced)
+Blade::directive('sum', function ($expression) {
+return "<?php echo array_sum([$expression]); ?>";
+});
+
+Use:
+
+@sum(1,2,3)
+
+👉 Output:
+
+6
