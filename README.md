@@ -490,3 +490,158 @@ Use:
 👉 Output:
 
 6
+
+---
+
+Laravel Blade has 3 main ways to reuse UI:
+
+Concept Meaning
+Layout Main template (base page)
+Sub-view / Include Small reusable file
+Component Reusable UI block with props (modern way)
+🏗️ 2. Layout (Master Page)
+
+👉 Layout = full page skeleton
+
+Example:
+
+<!-- resources/views/layout.blade.php -->
+<html>
+<head>
+    <title>My App</title>
+</head>
+<body>
+
+    @yield('content')
+
+</body>
+</html>
+🔹 What is @yield?
+
+👉 Placeholder (empty space)
+
+“Child page will fill this area”
+
+🔥 3. Child View (using layout)
+@extends('layout')
+
+@section('content')
+<h1>Hello User</h1>
+@endsection
+🧠 How it works:
+Laravel loads layout.blade.php
+Finds @yield('content')
+Replaces it with @section('content')
+🔁 Flow:
+layout.blade.php
+↓
+@yield('content')
+↓
+user.blade.php injects content
+↓
+Final HTML page
+🔥 4. Sub-view (Include)
+
+👉 Small reusable file
+
+Example:
+
+<!-- header.blade.php -->
+<h1>My Header</h1>
+Use it:
+@include('header')
+🧠 Meaning:
+
+“Just paste this file here”
+
+🔥 Difference: include vs layout
+Feature @include @extends
+Purpose small parts full layout
+Usage header/footer full page structure
+Replacement no yes (via yield)
+🔥 5. Sections
+@section('content')
+@endsection
+
+👉 This defines content for @yield
+
+Bonus:
+@show
+
+👉 Immediately displays section (rare use)
+
+🔥 6. Components (MODERN WAY 🚀)
+
+👉 Reusable UI like buttons, cards, alerts
+
+Example component:
+
+<!-- resources/views/components/button.blade.php -->
+<button class="btn">
+    {{ $slot }}
+</button>
+Use it:
+<x-button>
+    Click Me
+</x-button>
+🧠 Meaning:
+
+$slot = content inside component
+
+🔥 Component with props:
+<x-button type="submit" color="red" />
+
+Component:
+
+<button class="{{ $color }}">
+    {{ $slot }}
+</button>
+🔥 7. Main Directives Summary
+Feature	Directive
+Layout	@extends
+Content injection	@yield
+Define content	@section
+Small reuse	@include
+Components	<x-...>
+🧠 8. Real-life analogy
+🏗️ Layout
+
+👉 House structure (walls, roof)
+
+🧩 Include
+
+👉 Bricks / small parts (header, footer)
+
+🎯 Components
+
+👉 Ready-made furniture (button, card, alert)
+
+🔥 9. How everything runs (FULL FLOW)
+Route
+↓
+Controller
+↓
+return view()
+↓
+Layout loads
+↓
+@yield waits
+↓
+@extend fills sections
+↓
+@include inserts small parts
+↓
+<x-component> renders reusable UI
+↓
+Final HTML shown
+🚀 10. Key Differences (VERY IMPORTANT)
+Concept Purpose Reusability Complexity
+Layout full page medium simple
+Include small parts high simple
+Components UI blocks very high modern
+🔥 Final memory trick:
+@extends = full structure 🏗️
+@yield = empty space ⬜
+@section = fill space ✍️
+@include = paste file 📄
+<x-\*> = reusable UI widget ⚙️

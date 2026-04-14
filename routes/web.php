@@ -240,7 +240,7 @@ Route::get('/viewbycontroller/{name}', [UserController::class, 'getViewByControl
 | Added myloop variable  which is a key value pair array  to fruits array to the view file to test the loop in the view file
 |--------------------------------------------------------------------------
 */
-Route::get ('/viewArraydata', [UserController::class, 'getViewArrayData']);
+Route::get('/viewArraydata', [UserController::class, 'getViewArrayData']);
 
 /*
 |--------------------------------------------------------------------------
@@ -365,4 +365,17 @@ Route::prefix('learn')->group(function () {
     Route::get('/interview-checklist', function () {
         return view('learn.interview-checklist');
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Main View
+|--------------------------------------------------------------------------
+| This method is used to return the main view
+| @include is used to include the sub view file in the main view file
+| @include('partial.headerSubView')
+|--------------------------------------------------------------------------
+*/
+Route::get('/mainview', function () {
+    return view('mainview');
 });
