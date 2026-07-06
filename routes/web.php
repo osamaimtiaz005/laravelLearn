@@ -190,6 +190,20 @@ Route::get('/user/{name}', function (string $name) {
     return view('user', ['name' => $name]);
 });
 
+
+// In Laravel, "shadowed" means that there is a more general or matching route defined *before* your redirect route,
+// causing the framework to match the earlier route and ignore (or never reach) the redirect.
+//
+// In your case:
+// - Route::get('/user/{name}', ...) matches *any* /user/something route, including /user/ali.
+// - Route::redirect('/user/ali', '/') is defined *after* that, so it will never be reached.
+// - The first route that matches the requested URL is picked, and the rest are ignored ("shadowed").
+//
+// So, Route::redirect('/user/ali', '/') is shadowed by the Route::get('/user/{name}', ...) route above it.
+//
+// "Shadowed" in this context means the route exists, but will never be used because a matching route above it
+// matches all the requests it would otherwise receive.
+
 /*
 |--------------------------------------------------------------------------
 | Redirect Route
@@ -199,7 +213,7 @@ Route::get('/user/{name}', function (string $name) {
 | $destination is the path of the destination file
 |--------------------------------------------------------------------------
 */
-Route::redirect('/user/ali', '/');
+Route::redirect('/check/redirect', '/');
 
 /*
 |--------------------------------------------------------------------------
@@ -379,3 +393,22 @@ Route::prefix('learn')->group(function () {
 Route::get('/mainview', function () {
     return view('mainview');
 });
+
+/*
+|--------------------------------------------------------------------------
+| User Form Route
+|--------------------------------------------------------------------------
+| This method is used to return the user form view file
+|--------------------------------------------------------------------------
+*/
+Route::get('/user-form', function () {
+    return view('user-form');
+});
+/*
+|--------------------------------------------------------------------------
+| Add User Route
+|--------------------------------------------------------------------------
+| This method is used to add a user by using the post method
+|--------------------------------------------------------------------------
+*/
+Route::post('/addUser', [UserController::class, 'addUser']);

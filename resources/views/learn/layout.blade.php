@@ -67,6 +67,47 @@
         <a href="{{ url('/learn/interview-checklist') }}">Interview checklist</a>
     </nav>
 
+
+    {{-- 
+        Explaining <summary>, <details>, <dl>, and <dt> HTML tags for beginners:
+
+        <details> ... </details>
+            - This tag creates an expandable/collapsible section.
+            - By default, the content inside <details> is hidden, and the user can click to reveal it.
+            - Commonly used when you want to hide additional information unless the user requests it (like FAQs).
+
+        <summary> ... </summary>
+            - The first child inside <details>.
+            - Acts as the clickable heading for the collapsible section.
+            - When clicked, it toggles the visibility of the rest of the <details> content.
+
+            Example:
+                <details>
+                    <summary>More info</summary>
+                    This is hidden until you click!
+                </details>
+
+        <dl> ... </dl>
+            - "Definition List": Used to group a set of terms and their definitions, like a glossary or variable descriptions.
+            - Inside <dl>, use <dt> for the term and <dd> for the description.
+
+            Example:
+                <dl>
+                    <dt>HTML</dt>
+                    <dd>Standard language for documents designed to be displayed in a web browser.</dd>
+                    <dt>CSS</dt>
+                    <dd>Language used to style the layout of web pages.</dd>
+                </dl>
+
+        <dt> ... </dt>
+            - "Definition Term": Used inside <dl> to indicate the item being defined.
+            - Usually followed by <dd>, which provides the explanation or value of that term.
+
+        In summary:
+            - <details> + <summary> = Expandable/collapsible sections for optional info.
+            - <dl>, <dt>, <dd> = Semantic lists for terms and their meanings or explanations.
+            - Using these tags helps make your HTML more accessible and organized, and they provide built-in browser behavior (like expand/collapse) with no JavaScript needed.
+    --}}
     <details class="learn-glossary">
         <summary>Layout rendering &amp; Blade / Laravel keywords (click to expand)</summary>
         <dl>

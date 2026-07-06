@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+
 /**
  * namespace is for the path of the file
  * UserController — handles HTTP logic for user-related routes.
@@ -68,6 +70,27 @@ class UserController extends Controller
         // <p>{{ $fruit }}</p>
         // @endforeach
         // this will loop through the myloop array and print the value of the array
+    }
+
+    public function addUser(Request $request)
+
+    {
+        $name = $request->input('name');
+        $email = $request->input('email');
+        $city = $request->input('city');
+        echo "Name: " . $name . "<br>";
+        echo "Email: " . $email . "<br>";
+        echo "City: " . $city . "<br>";
+        // echo "User added successfully";
+        // here Request is a class that is used to get the input from the form
+        // $request is an object of the Request class
+        // $request->input('name') is used to get the value of the name input field
+        // $request->input('email') is used to get the value of the email input field
+        // $request->input('city') is used to get the value of the city input field
+        // we can use the $request object to get the input from the form
+        // we can use the $request object to validate the input
+        // we can use the $request object to redirect the user to the home page
+        // we can use the $request object to store the data in the database
     }
 }
 
