@@ -107,6 +107,25 @@ class UserController extends Controller
         echo "<br>";
         echo $request->country; // this will print the value of the country input field
     }
+
+    public function validateForm(Request $request){
+        //validate is a function  from request class that is used to validate the form data
+        // we pass an array to the validate function and the array contains the rules for the form fields
+        // required is a rule that is used to validate the required fields
+        // min is a rule that is used to validate the minimum length of the field
+        // max is a rule that is used to validate the maximum length of the field
+        // email is a rule that is used to validate the email address
+        // unique is a rule that is used to validate the unique email address
+        // same is a rule that is used to validate the confirm password field and it should be the same as the password field
+        $request->validate([
+            'name' => 'required | min:3 | max:10',
+            'email' => 'required | email | unique:users',
+            'password' => 'required | min:8 | max:16',
+            'confirm_password' => 'required | same:password',
+        ]
+        );
+        echo "Form validated successfully";
+    }
 }
 /*
 When a user hits a URL:

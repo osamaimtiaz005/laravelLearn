@@ -417,3 +417,8 @@ Route::get('/user-attributes-form', function () {
     return view('user-attributesForm');
 });
 Route::post('/store-user-attributes', [UserController::class, 'storeUserAttributes']);
+
+Route::get('/form-validation', function () {
+    return view('validation.form-validation');
+});
+Route::post('/validate-form', [UserController::class, 'validateForm']);
