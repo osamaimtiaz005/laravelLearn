@@ -73,7 +73,6 @@ class UserController extends Controller
     }
 
     public function addUser(Request $request)
-
     {
         $name = $request->input('name');
         $email = $request->input('email');
@@ -92,8 +91,23 @@ class UserController extends Controller
         // we can use the $request object to redirect the user to the home page
         // we can use the $request object to store the data in the database
     }
-}
 
+
+    public function storeUserAttributes(Request $request)
+    {
+        print_r($request->skill); // this will print the array of the skill input field print_r is used to print the array in a readable format
+        echo "<br>";
+        echo $request->gender; // this will print the value of the gender input field
+        echo "<br>";
+        echo $request->age; // this will print the value of the age input field
+        echo "<br>";
+        echo $request->dob; // this will print the value of the dob input field
+        echo "<br>";
+        echo $request->email; // this will print the value of the email input field
+        echo "<br>";
+        echo $request->country; // this will print the value of the country input field
+    }
+}
 /*
 When a user hits a URL:
 - Controller receives the request

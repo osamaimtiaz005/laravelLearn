@@ -412,3 +412,8 @@ Route::get('/user-form', function () {
 |--------------------------------------------------------------------------
 */
 Route::post('/addUser', [UserController::class, 'addUser']);
+
+Route::get('/user-attributes-form', function () {
+    return view('user-attributesForm');
+});
+Route::post('/store-user-attributes', [UserController::class, 'storeUserAttributes']);
