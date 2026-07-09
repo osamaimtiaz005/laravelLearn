@@ -32,18 +32,25 @@ class AppServiceProvider extends ServiceProvider
         */
 
         // Option A: Reuse your existing Rule class (recommended — logic stays in one place)
-        Validator::extend('ageLimit', function ($attribute, $value, $fail) {
-            (new ageLimit())->validate($attribute, $value, $fail);
+        // extend() passes 4 args: $attribute, $value, $parameters (array), $validator
+        // NOT the same $fail Closure that ValidationRule::validate() expects
+        Validator::extend('ageLimit', function ($attribute, $value, $parameters, $validator) {
+            (new ageLimit())->validate($attribute, $value, function ($message) use ($attribute, $validator) {
+                $validator->errors()->add($attribute, $message);
+            });
+
+            return true; // return true so Laravel does not add a duplicate generic error
         });
 
         // Option B: Inline closure (no separate Rule class needed)
-        // Validator::extend('ageLimit', function ($attribute, $value, $fail) {
+        // Validator::extend('ageLimit', function ($attribute, $value, $parameters, $validator) {
         //     if ($value < 18) {
-        //         $fail('You must be at least 18 years old to register.');
+        //         return false;
         //     }
         //     if ($value > 100) {
-        //         $fail('You must be less than 100 years old to register.');
+        //         return false;
         //     }
+        //     return true;
         // });
     }
 }
