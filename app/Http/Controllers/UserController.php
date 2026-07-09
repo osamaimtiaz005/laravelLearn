@@ -122,8 +122,20 @@ class UserController extends Controller
             'email' => 'required | email | unique:users',
             'password' => 'required | min:8 | max:16',
             'confirm_password' => 'required | same:password',
+        ],
+        [
+            'name.required' => 'Name cannot be empty',
+            'name.min' => 'Name must be at least 3 characters',
+            'name.max' => 'Name must be less than 10 characters',
+            'email.required' => 'Email cannot be empty',
+            'email.email' => 'Email must be a valid email address',
+            'email.unique' => 'Email must be unique',
         ]
         );
+
+        // we can also use the messages array to display the custom messages for the validation errors
+        //first in array we add field name and then the rule name and then the custom message
+        // it is a key value pair array
         echo "Form validated successfully";
     }
 }
