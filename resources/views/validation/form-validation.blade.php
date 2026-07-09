@@ -29,8 +29,21 @@
     @csrf
     <div>
         <label for="name">Name</label>
-        <!-- old('name') is used to display the old value of the name field if there is any error -->
-        <input type="text" name="name" id="name" value="{{ old('name') }}" />
+        <!-- 
+            The value="{{ old('name') }}" attribute:
+                - Displays the previously entered value in the 'name' field if the form is reloaded after validation fails.
+                - Keeps user input intact so users don't have to retype data after a failed submission.
+
+            The class="{{ $errors->has('name') ? 'input-error' : '' }}":
+                - Dynamically adds the "input-error" CSS class to the input field if there is a validation error for 'name'.
+                - $errors->has('name') is a Laravel helper that returns true if there is a validation error for the 'name' field.
+                - we can also use the $errors->first('name') to get the first error message for the 'name' field
+            Summary:
+                - Together, these features improve the user experience by both highlighting invalid fields and preserving user input after an error.
+        -->
+   
+
+        <input type="text" name="name" id="name" value="{{ old('name') }}" class="{{ $errors->has('name') ? 'input-error' : '' }}" />
         @error('name')
         <p style="color: red;">{{ $message }}</p>
         @enderror
@@ -77,5 +90,9 @@
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 5px;
+    }
+    .input-error {
+        border: 1px solid red;
+        color: red;
     }
 </style>
