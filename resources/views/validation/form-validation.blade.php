@@ -96,3 +96,17 @@
         color: red;
     }
 </style>
+
+<!--
+    You can customize the default validation error messages that Laravel displays to users.
+    This is done by editing the `validation.php` file, which is located in the `lang/en` directory of your project.
+    If you do not already have this file, you can generate it by running the Artisan command:
+
+        php artisan lang:publish
+
+    Once published, open `lang/en/validation.php`. Inside this file, you'll find an array of validation rules as keys, each mapping to the error message shown when that rule fails.
+    You are free to modify these messages to better fit your application's tone or language preferences.
+    For example, to change the "required" message, you would update the value for the 'required' key in the array.
+
+    This approach allows you to provide a more user-friendly or specific explanation of validation errors throughout your application.
+-->
