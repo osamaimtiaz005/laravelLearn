@@ -645,3 +645,194 @@ Components UI blocks very high modern
 @section = fill space ✍️
 @include = paste file 📄
 <x-\*> = reusable UI widget ⚙️
+
+---
+
+# firstLearning — Laravel Learning Project
+
+A hands-on Laravel 12 learning repository. Each commit adds a small, commented example so you can follow routing, Blade, controllers, forms, and validation step by step.
+
+**Stack:** PHP 8.2+, Laravel 12, Blade, XAMPP-friendly local setup
+
+---
+
+## Quick Start
+
+```bash
+# Install dependencies
+composer install
+npm install
+
+# Copy environment file and generate app key
+cp .env.example .env
+php artisan key:generate
+
+# Run migrations (optional — needed for email unique validation)
+php artisan migrate
+
+# Start the dev server
+php artisan serve
+```
+
+Open `http://127.0.0.1:8000` in your browser. Always use the same host for browsing and form submissions (see CSRF notes below).
+
+---
+
+## Learning Path (Commit History)
+
+Topics are listed in the order they were added to this repo.
+
+### 1. Project Setup & Views
+| Commit | Topic |
+|--------|-------|
+| `f6abb0f` | Initial Laravel project |
+| `be7a2ee` | First Blade view — `resources/views/welcome.blade.php` |
+| `c078891` / `2332d65` | README cheatsheet (PHP symbols, routing, Blade, etc.) |
+
+### 2. Routing Basics
+| Commit | Topic |
+|--------|-------|
+| `1272cf7` | Home and test routes — `Route::get()` vs `Route::view()` |
+| `777765f` | Pass data to views via route parameters |
+| `50c99e9` | Navigate between routes using anchor tags in views |
+| `3754410` | Redirect routes — `Route::redirect()` |
+| `5bd60bb` | HTTP methods — GET, POST, PUT, DELETE, PATCH, match, any |
+| `23dc77e` | PHP file rules (`<?php` at line 1, no closing `?>`) + route comments |
+
+### 3. Controllers
+| Commit | Topic |
+|--------|-------|
+| `872d3b6` | Create `UserController` — `php artisan make:controller UserController` |
+| `83d1e9a` | Dynamic route parameters — `/dynamicUser-controller/{name}` |
+| `2174cd6` | Return views from controller with dynamic data |
+| `c4ea075` | Nested view folders — `view('admin.login')` → `admin/login.blade.php` |
+
+### 4. Blade Templates
+| Commit | Topic |
+|--------|-------|
+| `c64c447` | Blade basics, layout design, `::` static access operator |
+| `87188d8` | Variables, arrays, `@if`, `@foreach` directives |
+| `37b09c8` | Conditional rendering with `@if` |
+| `c029ec0` | Sub-views with `@include` |
+| `ad45b27` | Pass data into included sub-views |
+| `4c52cfb` | Conditional `@include` with `@if` |
+| `4ab01fe` | Blade components — `<x-messagebanner>` with dynamic type/style |
+
+**Learning routes:** `/learn/blade-basics`, `/learn/blade-loops-data`, `/learn/interview-checklist`
+
+### 5. Forms & Request Handling
+| Commit | Topic |
+|--------|-------|
+| `096b857` | User form — GET form page + POST handler (`addUser`) |
+| `0888232` | CSRF token (`@csrf`) — causes of 419 errors, Postman tips |
+| `dd0b541` | Checkbox, radio, select inputs — `storeUserAttributes` |
+
+### 6. Form Validation
+| Commit | Topic |
+|--------|-------|
+| `47c7eea` | `$request->validate()` — rules for name, email, password |
+| `21434a5` | Display errors — `$errors->any()`, `@error`, `@enderror` |
+| `112dce9` | Custom validation messages in controller |
+| `98c2917` | Retain input on error — `old('field')` |
+| `8a9d23e` | Dynamic error CSS class — `$errors->has('name')` |
+| `83dd2cb` | Global messages — `lang/en/validation.php` |
+| `5fd9606` | Custom rule class — `app/Rules/ageLimit.php` |
+| `ea32367` | Register rule via `Validator::extend()` in `AppServiceProvider` |
+| `bfbc6d2` | Detailed comments on Service Provider, `extends`, `boot()` |
+
+---
+
+## Routes Reference
+
+| URL | Method | Handler | Purpose |
+|-----|--------|---------|---------|
+| `/` | GET | closure | Welcome page |
+| `/home` | GET | closure | Home view |
+| `/test` | GET | closure / `Route::view` | Test view |
+| `/user/{name}` | GET | closure | Pass name to `user` view |
+| `/check/redirect` | GET | redirect | Redirect to `/` |
+| `/user-controller` | GET | `UserController@getUser` | Return string from controller |
+| `/dynamicUser-controller/{name}` | GET | `UserController@getDynamicUser` | Dynamic URL parameter |
+| `/viewbycontroller/{name}` | GET | `UserController@getViewByController` | View from controller |
+| `/viewArraydata` | GET | `UserController@getViewArrayData` | Blade `@foreach` demo |
+| `/admin/login` | GET | `UserController@getAdminLogin` | Nested folder view |
+| `/dashboard` | GET | closure (named) | Named route `dashboard` |
+| `/search?q=&page=` | GET | closure | Query string demo |
+| `/hello/{name}` | GET | closure | Path parameter demo |
+| `/learn/blade-basics` | GET | closure | Blade basics lesson |
+| `/learn/blade-loops-data` | GET | closure | Loops and data lesson |
+| `/learn/interview-checklist` | GET | closure | Interview checklist |
+| `/mainview` | GET | closure | Layout + `@include` demo |
+| `/user-form` | GET | closure | User registration form |
+| `/addUser` | POST | `UserController@addUser` | Process user form |
+| `/user-attributes-form` | GET | closure | Checkbox/radio form |
+| `/store-user-attributes` | POST | `UserController@storeUserAttributes` | Process attributes form |
+| `/form-validation` | GET | closure | Validation form |
+| `/validate-form` | POST | `UserController@validateForm` | Validate and show errors |
+
+---
+
+## Key Files
+
+| File | What it teaches |
+|------|-----------------|
+| `routes/web.php` | All routes with inline learning comments |
+| `app/Http/Controllers/UserController.php` | Controller methods, request input, validation |
+| `app/Providers/AppServiceProvider.php` | `Validator::extend()` for custom rules |
+| `app/Rules/ageLimit.php` | Custom `ValidationRule` class (age 18–100) |
+| `lang/en/validation.php` | Customize default Laravel error messages |
+| `resources/views/validation/form-validation.blade.php` | `old()`, `@error`, `$errors->has()` |
+| `resources/views/user-form.blade.php` | CSRF, form fields, POST submission |
+| `resources/views/user-attributesForm.blade.php` | Checkbox, radio, select inputs |
+| `resources/views/learn/*.blade.php` | Structured Blade lessons |
+| `resources/views/components/messagebanner.blade.php` | Reusable Blade component |
+
+---
+
+## Custom Validation — Two Approaches
+
+### Approach 1: Rule class directly (no Service Provider)
+
+```php
+use App\Rules\ageLimit;
+
+$request->validate([
+    'age' => ['required', new ageLimit],
+]);
+```
+
+### Approach 2: String rule via AppServiceProvider (used in this project)
+
+```php
+// AppServiceProvider::boot()
+Validator::extend('ageLimit', function ($attribute, $value, $parameters, $validator) {
+    (new ageLimit())->validate($attribute, $value, function ($message) use ($attribute, $validator) {
+        $validator->errors()->add($attribute, $message);
+    });
+    return true;
+});
+
+// UserController
+'age' => 'required|ageLimit',
+```
+
+---
+
+## CSRF Tips
+
+- Always include `@csrf` inside `<form method="post">`.
+- Use the same URL host for browsing and submitting (e.g. always `127.0.0.1`, not mixing with `localhost`).
+- Session expiry or missing cookies cause **419 Page Expired**.
+- For Postman/API testing, send the `_token` value and session cookie together.
+
+---
+
+## Useful Artisan Commands
+
+```bash
+php artisan serve          # Start dev server
+php artisan route:list     # List all routes
+php artisan make:controller UserController
+php artisan make:model User
+php artisan migrate
+```
