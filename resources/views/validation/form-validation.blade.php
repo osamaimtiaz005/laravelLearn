@@ -70,6 +70,13 @@
         <p style="color: red;">{{ $message }}</p>
         @enderror
     </div>
+    <div>
+        <label for="age">Age</label>
+        <input type="number" name="age" id="age" value="{{ old('age') }}" />
+        @error('age')
+        <p style="color: red;">{{ $message }}</p>
+        @enderror
+    </div>
     <button type="submit">Submit</button>
 </form>
 

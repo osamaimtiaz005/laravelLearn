@@ -118,10 +118,16 @@ class UserController extends Controller
         // unique is a rule that is used to validate the unique email address
         // same is a rule that is used to validate the confirm password field and it should be the same as the password field
         $request->validate([
-            'name' => 'required | min:3 | max:10',
-            'email' => 'required | email | unique:users',
-            'password' => 'required | min:8 | max:16',
-            'confirm_password' => 'required | same:password',
+            'name' => 'required|min:3|max:10',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:8|max:16',
+            'confirm_password' => 'required|same:password',
+            // Approach 1 (commented): use the Rule class directly — no Service Provider needed
+            // here we use new keyword to instantiate the class object  and pass the rule to the validate function
+            // 'age' => ['required', new ageLimit],
+
+            // Approach 2 (active): string rule — requires Validator::extend() in AppServiceProvider
+            'age' => 'required|ageLimit',
         ],
         [
             'name.required' => 'Name cannot be empty',
