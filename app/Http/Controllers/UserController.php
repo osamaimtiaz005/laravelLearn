@@ -108,7 +108,8 @@ class UserController extends Controller
         echo $request->country; // this will print the value of the country input field
     }
 
-    public function validateForm(Request $request){
+    public function validateForm(Request $request)
+    {
         //validate is a function  from request class that is used to validate the form data
         // we pass an array to the validate function and the array contains the rules for the form fields
         // required is a rule that is used to validate the required fields
@@ -117,26 +118,27 @@ class UserController extends Controller
         // email is a rule that is used to validate the email address
         // unique is a rule that is used to validate the unique email address
         // same is a rule that is used to validate the confirm password field and it should be the same as the password field
-        $request->validate([
-            'name' => 'required|min:3|max:10',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|max:16',
-            'confirm_password' => 'required|same:password',
-            // Approach 1 (commented): use the Rule class directly — no Service Provider needed
-            // here we use new keyword to instantiate the class object  and pass the rule to the validate function
-            // 'age' => ['required', new ageLimit],
+        $request->validate(
+            [
+                'name' => 'required|min:3|max:10',
+                'email' => 'required|email|unique:users',
+                'password' => 'required|min:8|max:16',
+                'confirm_password' => 'required|same:password',
+                // Approach 1 (commented): use the Rule class directly — no Service Provider needed
+                // here we use new keyword to instantiate the class object  and pass the rule to the validate function
+                // 'age' => ['required', new ageLimit],
 
-            // Approach 2 (active): string rule — requires Validator::extend() in AppServiceProvider
-            'age' => 'required|ageLimit',
-        ],
-        [
-            'name.required' => 'Name cannot be empty',
-            'name.min' => 'Name must be at least 3 characters',
-            'name.max' => 'Name must be less than 10 characters',
-            'email.required' => 'Email cannot be empty',
-            'email.email' => 'Email must be a valid email address',
-            'email.unique' => 'Email must be unique',
-        ]
+                // Approach 2 (active): string rule — requires Validator::extend() in AppServiceProvider
+                'age' => 'required|ageLimit',
+            ],
+            [
+                'name.required' => 'Name cannot be empty',
+                'name.min' => 'Name must be at least 3 characters',
+                'name.max' => 'Name must be less than 10 characters',
+                'email.required' => 'Email cannot be empty',
+                'email.email' => 'Email must be a valid email address',
+                'email.unique' => 'Email must be unique',
+            ]
         );
 
         // we can also use the messages array to display the custom messages for the validation errors
@@ -144,7 +146,11 @@ class UserController extends Controller
         // it is a key value pair array
         echo "Form validated successfully";
     }
+
+
 }
+
+
 /*
 When a user hits a URL:
 - Controller receives the request

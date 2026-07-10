@@ -422,3 +422,14 @@ Route::get('/form-validation', function () {
     return view('validation.form-validation');
 });
 Route::post('/validate-form', [UserController::class, 'validateForm']);
+
+
+Route::get('/url-check/landing', function () {
+    return view('url-check.landing');
+});
+Route::get('/url-check/about', function () {
+    return view('url-check.about');
+});
+Route::get('/url-check/products', function () {
+    return view('url-check.products');
+});
