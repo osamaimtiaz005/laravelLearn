@@ -433,3 +433,16 @@ Route::get('/url-check/about', function () {
 Route::get('/url-check/products', function () {
     return view('url-check.products');
 });
+// Named Route
+// We define a named route called 'user' that maps the URL '/named-route/profile/details/id'
+// to a controller or closure that returns the 'named-route.profile' view.
+// Using the 'name' method on the route assigns the alias 'user' to this route.
+// In Blade templates, you can now generate URLs to this route using route('user').
+// This improves maintainability: if the URL changes, you only update it here, not all view files!
+// Example usage in Blade view: <a href="{{ route('user') }}">Profile Page</a>
+Route::get('/named-route/profile/details/id', function () {
+    return view('named-route.profile');
+})->name('user');
+Route::get('/named-route/profile/details/id', function () {
+    return view('named-route.profile')->name('user');
+});
