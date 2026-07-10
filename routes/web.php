@@ -440,9 +440,9 @@ Route::get('/url-check/products', function () {
 // In Blade templates, you can now generate URLs to this route using route('user').
 // This improves maintainability: if the URL changes, you only update it here, not all view files!
 // Example usage in Blade view: <a href="{{ route('user') }}">Profile Page</a>
+
+Route::view('/named-route/welcome', 'named-route.welcome');
+
 Route::get('/named-route/profile/details/id', function () {
     return view('named-route.profile');
-})->name('user');
-Route::get('/named-route/profile/details/id', function () {
-    return view('named-route.profile')->name('user');
-});
+})->name('pf');
