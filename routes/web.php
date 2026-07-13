@@ -441,7 +441,7 @@ Route::get('/url-check/products', function () {
 // This improves maintainability: if the URL changes, you only update it here, not all view files!
 // Example usage in Blade view: <a href="{{ route('user') }}">Profile Page</a>
 
-Route::view('/named-route/welcome', 'named-route.welcome');
+Route::view('/named-route/welcome', 'named-route.welcome')->name('named-route.welcome');
 
 Route::get('/named-route/profile/details/id', function () {
     return view('named-route.profile');
@@ -467,3 +467,10 @@ Route::get('/named-route/product/details/id', [UserController::class, 'getProduc
 // to_route() demo — form page (GET) + save action (POST) that redirects to 'product'
 Route::get('/named-route/product/add', [UserController::class, 'showAddProductForm'])->name('product.add');
 Route::post('/named-route/product/save', [UserController::class, 'saveProduct'])->name('product.save');
+
+// to_route() WITH route parameters — pass values in URL like ['name' => 'iPhone 15']
+// Example redirect: to_route('product.show', ['name' => $productName])
+// Builds URL:       /named-route/product/show/iPhone%2015
+Route::get('/named-route/product/find', [UserController::class, 'showFindProductForm'])->name('product.find');
+Route::post('/named-route/product/find', [UserController::class, 'redirectToProductByName'])->name('product.find.submit');
+Route::get('/named-route/product/show/{name}', [UserController::class, 'showProductByName'])->name('product.show');

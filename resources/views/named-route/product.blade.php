@@ -10,3 +10,4 @@
 @endif
 
 <p><a href="{{ route('product.add') }}">Add a new product (form demo)</a></p>
+<p><a href="{{ route('product.find') }}">Find product by name (to_route with params)</a></p>

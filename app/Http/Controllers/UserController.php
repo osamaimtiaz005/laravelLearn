@@ -255,6 +255,7 @@ class UserController extends Controller
     |
     | ->with('key', 'value') attaches flash data for the NEXT request only
     |    (available in Blade via session('key')).
+
     |--------------------------------------------------------------------------
     */
     public function saveProduct(Request $request)
@@ -272,6 +273,78 @@ class UserController extends Controller
         return to_route('product')
             ->with('success', 'Product saved successfully!')
             ->with('product_name', $productName);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | to_route() WITH ROUTE PARAMETERS — show form (GET)
+    |--------------------------------------------------------------------------
+    | URL:  GET /named-route/product/find
+    | Name: 'product.find'
+    |
+    | User types a product name on this page.
+    |--------------------------------------------------------------------------
+    */
+    public function showFindProductForm()
+    {
+        return view('named-route.find-product');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | to_route('routeName', ['param' => 'value']) — redirect with URL params (POST)
+    |--------------------------------------------------------------------------
+    | URL:  POST /named-route/product/find
+    | Name: 'product.find.submit'
+    |
+    | Route definition (web.php):
+    |   Route::get('/named-route/product/show/{name}', ...)->name('product.show');
+    |
+    | The {name} in the URL is a ROUTE PARAMETER.
+    | Pass it as the second argument to to_route():
+    |
+    |   return to_route('product.show', ['name' => $productName]);
+    |
+    | Laravel builds the URL automatically:
+    |   Input:  name = "iPhone 15"
+    |   Output: /named-route/product/show/iPhone%2015
+    |
+    | Same idea works with route() in Blade:
+    |   route('product.show', ['name' => 'iPhone 15'])
+    |
+    | FLOW:
+    |   1. User submits name on /named-route/product/find
+    |   2. redirectToProductByName() validates input
+    |   3. to_route('product.show', ['name' => $productName]) redirects
+    |   4. showProductByName($name) receives {name} from URL and shows the view
+    |--------------------------------------------------------------------------
+    */
+    public function redirectToProductByName(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|min:2|max:50',
+        ]);
+
+        $productName = $request->input('name');
+
+        // Pass route parameter directly in the second array argument
+        return to_route('product.show', ['name' => $productName]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Display product name from route parameter {name} (GET)
+    |--------------------------------------------------------------------------
+    | URL:  GET /named-route/product/show/{name}
+    | Name: 'product.show'
+    |
+    | Laravel automatically passes {name} from the URL into $name parameter.
+    | Example: /named-route/product/show/Samsung%20S24  →  $name = "Samsung S24"
+    |--------------------------------------------------------------------------
+    */
+    public function showProductByName(string $name)
+    {
+        return view('named-route.product-by-name', ['name' => $name]);
     }
 
 
