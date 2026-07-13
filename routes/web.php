@@ -578,3 +578,5 @@ Route::controller(StudentController::class)->group(function () {
     Route::get('/about/{name}', 'about');
    
 });
+
+
