@@ -623,3 +623,5 @@ Route::get('/multiple-middleware-to-route', function () {
 |--------------------------------------------------------------------------
 */
 Route::get('/user-db', [User_dbController::class, 'user_db']);
+
+Route::get('/user-list', [User_dbController::class, 'userList']);

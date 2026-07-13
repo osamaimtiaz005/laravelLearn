@@ -10,7 +10,13 @@ class User_dbController extends Controller
         // The table('users') method specifies that we want to work with the 'users' table.
         // The get() method executes the query and fetches all rows as a collection.
         // The returned collection contains each user as an object with table column values as properties.
+        //DB::select('select * from users') is a method of the DB class that returns a collection of the users table
         return DB::table('users')->get();
+    }
+    public function userList()
+    {
+        $users = DB::select('select * from users');
+        return view('database.users', ['users' => $users]);
     }
 }
 ?>
