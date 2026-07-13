@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'access.key' => EnsureAccessKey::class,
             'global.mid' => globalMid::class,
         ]);
-        //appendToGroup is used to add Mutiple middlewares to a group alias
+        //appendToGroup is used to add Mutiple middlewares to a group alias 
         $middleware->appendToGroup('groupCheck', [EnsureAccessKey::class, countryCheck::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

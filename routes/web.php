@@ -605,3 +605,10 @@ Route::prefix('middleware-demo')->group(function () {
 Route::get('/middleware-group-check', function () {
     return "Middleware Group Check Protected";
 })->middleware('groupCheck');
+//groupCheck is a group alias that is defined in the bootstrap/app.php file
+
+Route::get('/multiple-middleware-to-route', function () {
+    return "Multiple Middleware to Route";
+})->middleware('global.mid', 'access.key');
+//global.mid is a middleware alias that is defined in the bootstrap/app.php file
+//access.key is a middleware alias that is defined in the bootstrap/app.php file
