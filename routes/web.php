@@ -571,12 +571,33 @@ Route::prefix("admin")->group(  function(){
 
 
 Route::controller(StudentController::class)->group(function () {
-    Route::get('/show', 'show'  );
+    Route::get('/show', 'show');
     Route::get('/edit', 'edit');
     Route::get('/delete', 'delete');
     Route::get('/create', 'create');
     Route::get('/about/{name}', 'about');
-   
+});
+
+/*
+|--------------------------------------------------------------------------
+| Conditional Middleware Demo
+|--------------------------------------------------------------------------
+| globalMid     → runs on EVERY request (registered in bootstrap/app.php append)
+| access.key    → runs ONLY on routes that use ->middleware('access.key')
+|
+| Try:
+|   /middleware-demo/public              → always works
+|   /middleware-demo/protected         → 403 without key
+|   /middleware-demo/protected?access_key=learn123 → works
+|--------------------------------------------------------------------------
+*/
+Route::view('/middleware-demo', 'middleware.demo')->name('middleware.demo');
+
+Route::prefix('middleware-demo')->group(function () {
+    Route::view('/public', 'middleware.public');
+
+    Route::view('/protected', 'middleware.protected')
+        ->middleware('access.key');
 });
 
 

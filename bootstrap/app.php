@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\globalMid;
+use App\Http\Middleware\EnsureAccessKey;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -24,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
          */
   
         $middleware->append(globalMid::class);
+
+        // Route middleware alias — apply only where you call ->middleware('access.key')
+        $middleware->alias([
+            'access.key' => EnsureAccessKey::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
