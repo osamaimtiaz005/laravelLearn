@@ -1,6 +1,7 @@
 <?php
 /*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
+use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User_dbController;
@@ -625,3 +626,5 @@ Route::get('/multiple-middleware-to-route', function () {
 Route::get('/user-db', [User_dbController::class, 'user_db']);
 
 Route::get('/user-list', [User_dbController::class, 'userList']);
+
+Route::get('/customer-list', [Customer_dbController::class, 'customerList']);
