@@ -15,9 +15,12 @@ class globalMid
      */
     public function handle(Request $request, Closure $next): Response
     {
-        echo "Hi this is global middleware";
-        return $next($request);
+        // This middleware now runs ONLY on routes that use ->middleware('global.mid')
+        // (registered as alias in bootstrap/app.php, not append)
 
+        echo "Hi this is global middleware";
+
+        return $next($request);
     }
 }
 /*

@@ -570,19 +570,21 @@ Route::prefix("admin")->group(  function(){
 */
 
 
-Route::controller(StudentController::class)->group(function () {
-    Route::get('/show', 'show');
-    Route::get('/edit', 'edit');
-    Route::get('/delete', 'delete');
-    Route::get('/create', 'create');
-    Route::get('/about/{name}', 'about');
-});
+Route::controller(StudentController::class)
+    ->middleware('global.mid')  // globalMid runs ONLY on these student routes
+    ->group(function () {
+        Route::get('/show', 'show');
+        Route::get('/edit', 'edit');
+        Route::get('/delete', 'delete');
+        Route::get('/create', 'create');
+        Route::get('/about/{name}', 'about');
+    });
 
 /*
 |--------------------------------------------------------------------------
 | Conditional Middleware Demo
 |--------------------------------------------------------------------------
-| globalMid     → runs on EVERY request (registered in bootstrap/app.php append)
+| global.mid    → runs ONLY on student routes (see ->middleware('global.mid') below)
 | access.key    → runs ONLY on routes that use ->middleware('access.key')
 |
 | Try:
@@ -600,4 +602,6 @@ Route::prefix('middleware-demo')->group(function () {
         ->middleware('access.key');
 });
 
-
+Route::get('/middleware-group-check', function () {
+    return "Middleware Group Check Protected";
+})->middleware('groupCheck');
