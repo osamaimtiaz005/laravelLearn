@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\User_dbController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use League\Flysystem\UrlGeneration\PrefixPublicUrlGenerator;
@@ -612,3 +613,13 @@ Route::get('/multiple-middleware-to-route', function () {
 })->middleware('global.mid', 'access.key');
 //global.mid is a middleware alias that is defined in the bootstrap/app.php file
 //access.key is a middleware alias that is defined in the bootstrap/app.php file
+
+
+/*
+|--------------------------------------------------------------------------
+| User Database Route
+|--------------------------------------------------------------------------
+| This method is used to return the user database
+|--------------------------------------------------------------------------
+*/
+Route::get('/user-db', [User_dbController::class, 'user_db']);
