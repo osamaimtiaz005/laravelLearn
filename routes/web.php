@@ -1,6 +1,7 @@
 <?php
 /*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -527,3 +528,53 @@ Route::prefix("admin")->group(  function(){
         });
     }
 );
+
+
+//Route Grouping having Same Controller Methods
+/*
+|--------------------------------------------------------------------------
+| Route Grouping with Controllers — Example Explained
+|--------------------------------------------------------------------------
+| Laravel provides a convenient way to group routes that use the same controller.
+| This helps avoid repeating the controller reference for every single route,
+| making your route definitions cleaner and more maintainable.
+|
+| The syntax: Route::controller(ControllerClass::class)->group(function () { ... });
+|
+| How it works:
+|   - All routes inside the group will use the specified controller.
+|   - Instead of providing a closure or full [Controller, method] array,
+|     you just specify the method name as a string for each route.
+|   - This reduces repetition, especially if many routes are handled by the same controller.
+|
+| Example with StudentController:
+|   Route::controller(StudentController::class)->group(function () {
+|       Route::get('/show', 'show');
+|       Route::get('/edit', 'edit');
+|       Route::get('/delete', 'delete');
+|       Route::get('/create', 'create');
+|       Route::get('/about/{name}', 'about');
+|   });
+|
+| Each call like Route::get('/show', 'show'); 
+|  - Maps GET requests to /show to the show() method on StudentController.
+|
+| For routes with parameters (such as /about/{name}):
+|  - The value in {name} will be passed as the argument to the about($name) method.
+|
+| Summary of This Pattern:
+|   - Reduces code duplication when multiple routes belong to a single controller.
+|   - Makes large route files easier to read and modify.
+|   - You're free to use other route features (middleware, prefix, etc.) as needed.
+|--------------------------------------------------------------------------
+*/
+
+
+Route::controller(StudentController::class)->group(function () {
+    Route::get('/show', 'show'  );
+    Route::get('/edit', 'edit');
+    Route::get('/delete', 'delete');
+    Route::get('/create', 'create');
+    Route::get('/about/{name}', 'about');
+   
+});
