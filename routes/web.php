@@ -446,3 +446,24 @@ Route::view('/named-route/welcome', 'named-route.welcome');
 Route::get('/named-route/profile/details/id', function () {
     return view('named-route.profile');
 })->name('pf');
+
+// Named Route with Controller Method
+// URL:  /named-route/product/details/id
+// Name: 'product'
+//
+// route('product')   → generates URL string (use in Blade links)
+// to_route('product') → redirects browser to this URL (use from OTHER controllers/actions)
+//
+// Example Blade link (generates URL, does not redirect by itself):
+//   <a href="{{ route('product') }}">Product page</a>
+//
+// Example controller redirect (after saving data on a different route):
+//   return to_route('product');
+//
+// Do NOT use to_route('product') inside getProduct() — that method handles this
+// route already; redirecting to itself causes an infinite loop. Use view() instead.
+Route::get('/named-route/product/details/id', [UserController::class, 'getProduct'])->name('product');
+
+// to_route() demo — form page (GET) + save action (POST) that redirects to 'product'
+Route::get('/named-route/product/add', [UserController::class, 'showAddProductForm'])->name('product.add');
+Route::post('/named-route/product/save', [UserController::class, 'saveProduct'])->name('product.save');

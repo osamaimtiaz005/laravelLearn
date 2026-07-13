@@ -146,6 +146,133 @@ class UserController extends Controller
         // it is a key value pair array
         echo "Form validated successfully";
     }
+    /*
+    |--------------------------------------------------------------------------
+    | Named Route with Controller Method — getProduct()
+    |--------------------------------------------------------------------------
+    | URL:  GET /named-route/product/details/id
+    | Name: 'product'  (defined in routes/web.php with ->name('product'))
+    |
+    | This method DISPLAYS the product page by returning a Blade view.
+    |--------------------------------------------------------------------------
+    |
+    | ── route() vs to_route() vs view() ─────────────────────────────────────
+    |
+    | 1) route('product')
+    |    - Returns a URL string only (does NOT redirect, does NOT render a page).
+    |    - Used in Blade for links: <a href="{{ route('product') }}">Go to product</a>
+    |    - Example output: "http://localhost:8000/named-route/product/details/id"
+    |
+    | 2) to_route('product')
+    |    - Sends an HTTP redirect response to the named route's URL.
+    |    - Browser leaves the current page and loads the target route.
+    |    - Shorthand for: return redirect()->route('product');
+    |    - Use AFTER an action (save form, login, delete) to send user elsewhere.
+    |
+    |    Example — redirect from a different method (correct usage):
+    |
+    |        public function saveProduct(Request $request)
+    |        {
+    |            // ... save product to database ...
+    |            return to_route('product');  // user lands on product page
+    |        }
+    |
+    |    With route parameters (when route has {id} placeholder):
+    |
+    |        return to_route('user.show', ['id' => 5]);
+    |        // same as: return redirect()->route('user.show', ['id' => 5]);
+    |
+    |    With flash message (data available on next request only):
+    |
+    |        return to_route('product')->with('success', 'Product saved!');
+    |
+    | 3) view('named-route.product')
+    |    - Renders the Blade file and returns HTML (no redirect).
+    |    - Use when THIS method is the one that should show the page.
+    |
+    | ── Why NOT to_route('product') inside getProduct()? ─────────────────────
+    |
+    |    getProduct() IS the handler for route 'product'.
+    |    If you write return to_route('product') here, Laravel redirects to the
+    |    same URL → getProduct() runs again → redirects again → infinite loop.
+    |
+    |    WRONG (infinite loop):
+    |        public function getProduct() {
+    |            return to_route('product');
+    |        }
+    |
+    |    CORRECT (show the page):
+    |        public function getProduct() {
+    |            return view('named-route.product');
+    |        }
+    |
+    | ── Summary ─────────────────────────────────────────────────────────────
+    |
+    |    route()    → build URL string (for <a href>, forms, APIs)
+    |    to_route() → redirect browser to a named route (after an action)
+    |    view()     → render a page on the current route (no redirect)
+    |--------------------------------------------------------------------------
+    */
+    public function getProduct()
+    {
+        return view('named-route.product');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Step 1 — Show the "Add Product" form (GET request)
+    |--------------------------------------------------------------------------
+    | URL:  GET /named-route/product/add
+    | Name: 'product.add'
+    |
+    | This method only DISPLAYS the form. No redirect here.
+    | User fills the form and submits → POST goes to saveProduct() below.
+    |--------------------------------------------------------------------------
+    */
+    public function showAddProductForm()
+    {
+        return view('named-route.add-product');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Step 2 — Handle form submit, then redirect with to_route() (POST request)
+    |--------------------------------------------------------------------------
+    | URL:  POST /named-route/product/save
+    | Name: 'product.save'
+    |
+    | FLOW:
+    |   1. User submits form on /named-route/product/add
+    |   2. Laravel calls saveProduct()
+    |   3. We read/validate input, do work (here we just echo the name)
+    |   4. return to_route('product') → browser is REDIRECTED to route named 'product'
+    |   5. getProduct() runs and shows named-route.product view
+    |
+    | to_route('product') is correct HERE because:
+    |   - saveProduct() handles a DIFFERENT route ('product.save')
+    |   - After saving, we want to send the user to the product page
+    |   - We are NOT redirecting to our own route (no infinite loop)
+    |
+    | ->with('key', 'value') attaches flash data for the NEXT request only
+    |    (available in Blade via session('key')).
+    |--------------------------------------------------------------------------
+    */
+    public function saveProduct(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|min:2|max:50',
+        ]);
+
+        $productName = $request->input('name');
+
+        // In a real app you would save to database here, e.g.:
+        // Product::create(['name' => $productName]);
+
+        // Redirect to named route 'product' with a one-time success message
+        return to_route('product')
+            ->with('success', 'Product saved successfully!')
+            ->with('product_name', $productName);
+    }
 
 
 }
