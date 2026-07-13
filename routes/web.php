@@ -474,3 +474,56 @@ Route::post('/named-route/product/save', [UserController::class, 'saveProduct'])
 Route::get('/named-route/product/find', [UserController::class, 'showFindProductForm'])->name('product.find');
 Route::post('/named-route/product/find', [UserController::class, 'redirectToProductByName'])->name('product.find.submit');
 Route::get('/named-route/product/show/{name}', [UserController::class, 'showProductByName'])->name('product.show');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Admin Route Grouping (with prefix)
+|--------------------------------------------------------------------------
+| Laravel allows you to group related routes under a common URL prefix
+| using Route::prefix() and Route::group().
+
+| prefix is the route static method helper that is used to prefix the route with the given string
+| group is the route group method helper that is used to group the routes with the given closure
+| Route::prefix('admin') — All routes inside the group will have URLs starting with /admin.
+| Route::group() — Accepts a closure where the grouped routes are defined.
+|
+| Example below:
+|   - /admin/users       → handled by closure, returns "Admin Users"
+|   - /admin/moderators  → handled by closure, returns "Admin Moderators"
+|   - /admin/dashboard   → handled by closure, returns "Admin Dashboard"
+|
+| Why group routes?
+|   - Keeps code organized for logical areas (e.g., admin panel)
+|   - Makes it easy to apply middleware, namespace, or other shared settings
+|   - Ensures all admin URLs stay consistent and only need the prefix set in one place
+|
+| How this works:
+|   1. Route::prefix('admin') — sets a prefix for every route inside the group.
+|   2. ->group(function() { ... }) — closure receives the grouped route definitions.
+|   3. Each Route::get('/something', ...) inside the group will be available at /admin/something.
+|   4. You can also use controllers for complex logic.
+|
+| Example Usage:
+| Route::prefix('admin')->group(function () {
+|     Route::get('/users', ...);         // /admin/users
+|     Route::get('/dashboard', ...);     // /admin/dashboard
+| });
+|--------------------------------------------------------------------------
+*/
+
+
+Route::prefix("admin")->group(  function(){
+        Route::get('/users', function () {
+            return "Admin Users";
+        });
+        Route::get('/moderators', function () {
+            return "Admin Moderators";
+        });
+     
+        Route::get('/dashboard', function () {
+            return "Admin Dashboard";
+        });
+    }
+);
