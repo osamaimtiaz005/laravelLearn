@@ -2,6 +2,7 @@
 /*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
 use App\Http\Controllers\Customer_dbController;
+use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\httpController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
@@ -633,3 +634,91 @@ Route::get('/customer-list', [Customer_dbController::class, 'customerList']);
 
 
 Route::get('/http-controller', [httpController::class, 'index']);
+
+
+/*
+|--------------------------------------------------------------------------
+| DATABASE QUERY BUILDER ROUTES  (beginner walkthrough)
+|--------------------------------------------------------------------------
+|
+| WHAT IS A ROUTE?
+|   A route = one URL + one HTTP method (GET or POST) + one controller action.
+|
+| FULL FLOW (every click follows this path):
+|
+|   1. User opens a URL in the browser
+|   2. Laravel looks through routes/web.php
+|   3. It finds a matching Route::get(...) or Route::post(...)
+|   4. It calls the controller method written after the arrow
+|   5. That method talks to the database with Query Builder (DB::table...)
+|   6. The method returns a Blade view OR a redirect
+|
+| WORD BY WORD ON ONE LINE:
+|
+|   Route::get('/db-query-builder/all', [DBQueryController::class, 'getAllData'])
+|        ->name('dbQueryBuilder.all');
+|
+|   Route          = Laravel's routing class
+|   ::get          = this URL answers GET requests (open / read / show)
+|   '/db-query...' = the URL path after your site domain
+|   [Class, 'method'] = which controller method should run
+|   ->name('...')  = give the route a short nickname
+|                    so Blade can use route('dbQueryBuilder.all')
+|                    instead of hardcoding the full URL
+|
+| GET vs POST:
+|   GET  = show / search / sort / filter (safe to open in browser address bar)
+|   POST = insert / update / delete (changes data; comes from a form)
+|
+| {id} {name} {email} {phone}:
+|   Curly braces mean a variable piece of the URL.
+|   Example: /db-query-builder/byid/5  →  $id becomes 5 in the controller
+|
+|--------------------------------------------------------------------------
+*/
+
+// SHOW ALL ROWS
+// URL example:  http://localhost/firstLearning/public/db-query-builder/all
+Route::get('/db-query-builder/all', [DBQueryController::class, 'getAllData'])
+    ->name('dbQueryBuilder.all');
+
+// SHOW ONE ROW BY ID  (URL variable {id})
+// URL example:  /db-query-builder/byid/3
+Route::get('/db-query-builder/byid/{id}', [DBQueryController::class, 'getDataById'])
+    ->name('dbQueryBuilder.byid');
+
+// SHOW ROW(S) BY NAME
+// URL example:  /db-query-builder/byname/Ali
+Route::get('/db-query-builder/byname/{name}', [DBQueryController::class, 'getDataByName'])
+    ->name('dbQueryBuilder.byname');
+
+// SHOW ROW(S) BY EMAIL
+// URL example:  /db-query-builder/byemail/ali@mail.com
+Route::get('/db-query-builder/byemail/{email}', [DBQueryController::class, 'getDataByEmail'])
+    ->name('dbQueryBuilder.byemail');
+
+// SHOW ROW(S) BY PHONE
+// URL example:  /db-query-builder/byphone/03001234567
+Route::get('/db-query-builder/byphone/{phone}', [DBQueryController::class, 'getDataByPhone'])
+    ->name('dbQueryBuilder.byphone');
+
+// INSERT a new row (comes from the Insert form, method="post")
+Route::post('/db-query-builder/insert', [DBQueryController::class, 'insertData'])
+    ->name('dbQueryBuilder.insert');
+
+// UPDATE an existing row (URL needs which id to update)
+Route::post('/db-query-builder/update/{id}', [DBQueryController::class, 'updateData'])
+    ->name('dbQueryBuilder.update');
+
+// DELETE an existing row
+Route::post('/db-query-builder/delete/{id}', [DBQueryController::class, 'deleteData'])
+    ->name('dbQueryBuilder.delete');
+
+// SEARCH using query string: /db-query-builder/search?keyword=ali
+// (Form fields with method="get" become ?keyword=... in the URL)
+Route::get('/db-query-builder/search', [DBQueryController::class, 'searchData'])
+    ->name('dbQueryBuilder.search');
+
+// SORT using query string: /db-query-builder/sort?column=name&order=asc
+Route::get('/db-query-builder/sort', [DBQueryController::class, 'sortData'])
+    ->name('dbQueryBuilder.sort');
