@@ -1,6 +1,7 @@
 <?php
 /*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
+use App\Http\Controllers\AllrouteController;
 use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\ElqQueryBuilder;
@@ -778,3 +779,65 @@ Route::prefix('elqQueryBuilder')->controller(ElqQueryBuilder::class)->group(func
     Route::post('/deleteStudent/{id}', 'deleteStudent')->name('elqQueryBuilder.deleteStudent');
     Route::get('/searchStudent', 'searchStudent')->name('elqQueryBuilder.searchStudent');
 });
+
+/*
+|--------------------------------------------------------------------------
+| ALL ROUTE METHODS — real-life mini shop examples
+|--------------------------------------------------------------------------
+|
+| Start here:  /allroute
+|
+| Helper           | Real-life example in this demo
+| -----------------|-----------------------------------------------
+| Route::view      | About Us page (static, no controller)
+| Route::get       | Browse product catalog
+| Route::post      | Place a new order
+| Route::put       | Replace full user profile
+| Route::patch     | Toggle email-notification setting only
+| Route::delete    | Remove an item from the shopping cart
+| Route::match     | Contact form: GET shows, POST submits (same URL)
+| Route::any       | Payment webhook (accepts any HTTP method)
+|
+| Data is stored in session (no database).
+| HTML forms only send GET/POST — use @csrf + @method('PUT') etc.
+|
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/allroute', [AllrouteController::class, 'index'])
+    ->name('allroute.index');
+
+Route::post('/allroute/reset-cart', [AllrouteController::class, 'resetCart'])
+    ->name('allroute.resetCart');
+
+// About Us (static page)
+Route::view('/allroute/view', 'Allroute.view')
+    ->name('allroute.view');
+
+// Product catalog
+Route::get('/allroute/get', [AllrouteController::class, 'getExample'])
+    ->name('allroute.get');
+
+// Place order
+Route::post('/allroute/post', [AllrouteController::class, 'postExample'])
+    ->name('allroute.post');
+
+// Replace full profile
+Route::put('/allroute/put', [AllrouteController::class, 'putExample'])
+    ->name('allroute.put');
+
+// Update one setting
+Route::patch('/allroute/patch', [AllrouteController::class, 'patchExample'])
+    ->name('allroute.patch');
+
+// Remove cart item
+Route::delete('/allroute/delete', [AllrouteController::class, 'deleteExample'])
+    ->name('allroute.delete');
+
+// Contact form (show + submit)
+Route::match(['get', 'post'], '/allroute/match', [AllrouteController::class, 'matchExample'])
+    ->name('allroute.match');
+
+// Payment webhook
+Route::any('/allroute/any', [AllrouteController::class, 'anyExample'])
+    ->name('allroute.any');
