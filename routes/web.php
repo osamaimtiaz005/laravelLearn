@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
+use App\Http\Controllers\ElqQueryBuilder;
 use App\Http\Controllers\httpController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
@@ -722,3 +723,58 @@ Route::get('/db-query-builder/search', [DBQueryController::class, 'searchData'])
 // SORT using query string: /db-query-builder/sort?column=name&order=asc
 Route::get('/db-query-builder/sort', [DBQueryController::class, 'sortData'])
     ->name('dbQueryBuilder.sort');
+
+    /*
+|--------------------------------------------------------------------------
+| ELOQUENT QUERY BUILDER ROUTES
+|--------------------------------------------------------------------------
+|
+| WHAT IS ELOQUENT?
+|   Eloquent is Laravel's ORM (Object-Relational Mapping) system.
+|   It makes it easy to interact with the database using objects and methods.
+|
+| FULL FLOW (every click follows this path):
+|
+|   1. User opens a URL in the browser
+|   2. Laravel looks through routes/web.php
+|   3. It finds a matching Route::get(...) or Route::post(...)
+|   4. It calls the controller method written after the arrow
+|   5. That method talks to the database with Eloquent (Student::all())
+|   6. The method returns a Blade view OR a redirect
+|
+| WORD BY WORD ON ONE LINE:
+|
+|   Route::get('/elqQueryBuilder/studentList', [ElqQueryBuilder::class, 'studentList'])
+|        ->name('elqQueryBuilder.studentList');
+|
+|   Route          = Laravel's routing class
+|   ::get          = this URL answers GET requests (open / read / show)
+|   '/elqQueryBuilder/studentList' = the URL path after your site domain
+|   [Class, 'method'] = which controller method should run
+|   ->name('...')  = give the route a short nickname
+|                    so Blade can use route('elqQueryBuilder.studentList')
+|                    instead of hardcoding the full URL
+|
+| GET vs POST:
+|   GET  = show / search / sort / filter (safe to open in browser address bar)
+|   POST = insert / update / delete (changes data; comes from a form)
+|
+| {id} {name} {email} {phone}:
+|   Curly braces mean a variable piece of the URL.
+|   Example: /elqQueryBuilder/studentById/5  →  $id becomes 5 in the controller
+|--------------------------------------------------------------------------
+*/
+
+
+Route::prefix('elqQueryBuilder')->controller(ElqQueryBuilder::class)->group(function () {
+    Route::get('/studentList', 'studentList')->name('elqQueryBuilder.studentList');
+    Route::get('/studentById/{id}', 'studentById')->name('elqQueryBuilder.studentById');
+    Route::get('/studentByName/{name}', 'studentByName')->name('elqQueryBuilder.studentByName');
+    Route::get('/studentByBatch/{batch}', 'studentByBatch')->name('elqQueryBuilder.studentByBatch');
+    Route::get('/studentByEmail/{email}', 'studentByEmail')->name('elqQueryBuilder.studentByEmail');
+    Route::get('/studentByPhone/{phone}', 'studentByPhone')->name('elqQueryBuilder.studentByPhone');
+    Route::post('/addStudent', 'addStudent')->name('elqQueryBuilder.addStudent');
+    Route::post('/updateStudent/{id}', 'updateStudent')->name('elqQueryBuilder.updateStudent');
+    Route::post('/deleteStudent/{id}', 'deleteStudent')->name('elqQueryBuilder.deleteStudent');
+    Route::get('/searchStudent', 'searchStudent')->name('elqQueryBuilder.searchStudent');
+});
