@@ -16,7 +16,7 @@ class Customer_dbController extends Controller
         // The resulting $customers variable holds all customer data,
         // ready to be used (e.g., displayed in a view, further processed, etc).
         $customers = \App\Models\Customer::all();
-     return view('database.customers', ['customers' => $customers]);
+        return view('database.customers', ['customers' => $customers]); 
         // return $customers;
     }
 }

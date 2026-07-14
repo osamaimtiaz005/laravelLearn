@@ -49,5 +49,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
-    //
+    // specify the table name if it's different from the model name
+    protected $table = 'customers';
 }
