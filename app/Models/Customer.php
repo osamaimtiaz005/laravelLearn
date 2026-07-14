@@ -55,4 +55,86 @@ class Customer extends Model
     {
         echo "Customer List";
     }
+
+    /*
+    |-------------------------------------------------------------------------------------------  
+    | Explanation of: php artisan model:show Customer
+    |-------------------------------------------------------------------------------------------
+    | The Artisan command "php artisan model:show Customer" is a useful tool provided by Laravel
+    | to inspect the structure and details of an Eloquent model (in this case, the "Customer" model)
+    | directly from the command line.
+    |
+    | What it does:
+    | -------------
+    | - When you run this command, it generates a detailed summary of the model.
+    | - It displays information about the model's properties, database table, fillable fields,
+    |   relationships, and any associated methods.
+    | - This is especially helpful for understanding how your model is connected to your database
+    |   (such as table and column mappings, primary keys, relationships to other models, etc.).
+    |
+    | Why and when to use it:
+    | ----------------------
+    | - If you don't have direct access to the database or database management tools, 
+    |   this command lets you examine the structure and setup of your model classes.
+    | - It's useful for debugging, onboarding to a new codebase, or documenting your model logic.
+    | - You can quickly double-check what fields or relationships are present on the model without
+    |   opening database tools or code editors.
+    |
+    | Example usage:
+    | --------------
+    |   php artisan model:show Customer
+    | 
+    | This will print out detailed information about the Customer model on your terminal.
+    | 
+    | To summarize: 
+    | This command acts as a developer-friendly way to inspect your models' database structure
+    | and configuration directly from your command line, which is convenient when you don't have 
+    | access to the database itself.
+    |-------------------------------------------------------------------------------------------
+    */
+
+    /*
+    |-------------------------------------------------------------------------------------------  
+    | Explanation of: Laravel Tinker
+    |-------------------------------------------------------------------------------------------
+    | Laravel Tinker is a powerful REPL (Read-Eval-Print Loop) tool included with Laravel.
+    | It allows you to interact with your entire Laravel application from the command line
+    | in an interactive shell.
+    |
+    | What it does:
+    | -------------
+    | - Using Tinker, you can interact with your Eloquent models, perform database queries,
+    |   update or delete records, test out PHP code, and inspect objects on the fly.
+    | - Tinker uses the PsySH shell under the hood, providing an advanced interactive environment.
+    |
+    | Why and when to use it:
+    | ----------------------
+    | - Useful for quickly trying out code snippets or experimenting with your models.
+    | - Great for debugging, seeding data, or learning how Eloquent queries work.
+    | - You can create, retrieve, update, and delete records interactively without having to
+    |   write a migration or controller, or use database GUI tools.
+    |
+    | Example usage:
+    | -------------
+    |   php artisan tinker
+    |   >>> \App\Models\Customer::all();
+    |   >>> $customer = new \App\Models\Customer();
+    |   >>> $customer->name = 'John Doe';
+    |   >>> $customer->email = 'johndoe@example.com';
+    |   >>> $customer->save();
+    |   >>> \App\Models\Customer::find(1);
+    |   >>> \App\Models\Customer::where('email', 'like', '%@gmail.com')->get();
+    |
+    |   // You can also use Tinker for all sorts of PHP code:
+    |   >>> 2 + 2
+    |   => 4
+    |
+    | In summary:
+    | -----------
+    | - Tinker is an excellent tool for rapid prototyping and exploring your application's
+    |   internals.
+    | - It is especially handy for Eloquent model experimentation (like Customer), testing
+    |   relationships, and manipulating data directly from the command line.
+    |-------------------------------------------------------------------------------------------
+    */
 }
