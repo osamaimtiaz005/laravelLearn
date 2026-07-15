@@ -6,6 +6,7 @@ use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\ElqQueryBuilder;
 use App\Http\Controllers\httpController;
+use App\Http\Controllers\RequestMethodsController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User_dbController;
@@ -841,3 +842,44 @@ Route::match(['get', 'post'], '/allroute/match', [AllrouteController::class, 'ma
 // Payment webhook
 Route::any('/allroute/any', [AllrouteController::class, 'anyExample'])
     ->name('allroute.any');
+
+/*
+|--------------------------------------------------------------------------
+| REQUEST CLASS METHODS — same verbs + Request inspection
+|--------------------------------------------------------------------------
+|
+| Start here:  /request-methods
+|
+| Same HTTP helpers as /allroute (get, post, put, patch, delete, match, any),
+| but each controller action receives Illuminate\Http\Request and dumps:
+|   input(), all(), query(), has(), method(), path(), ip(), hasFile(), …
+|
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/request-methods', [RequestMethodsController::class, 'index'])
+    ->name('requestMethods.index');
+
+Route::get('/request-methods/get', [RequestMethodsController::class, 'getExample'])
+    ->name('requestMethods.get');
+
+Route::post('/request-methods/post', [RequestMethodsController::class, 'postExample'])
+    ->name('requestMethods.post');
+
+Route::put('/request-methods/put', [RequestMethodsController::class, 'putExample'])
+    ->name('requestMethods.put');
+
+Route::patch('/request-methods/patch', [RequestMethodsController::class, 'patchExample'])
+    ->name('requestMethods.patch');
+
+Route::delete('/request-methods/delete', [RequestMethodsController::class, 'deleteExample'])
+    ->name('requestMethods.delete');
+
+Route::match(['get', 'post'], '/request-methods/match', [RequestMethodsController::class, 'matchExample'])
+    ->name('requestMethods.match');
+
+Route::any('/request-methods/any', [RequestMethodsController::class, 'anyExample'])
+    ->name('requestMethods.any');
+
+Route::post('/request-methods/upload', [RequestMethodsController::class, 'uploadExample'])
+    ->name('requestMethods.upload');

@@ -27,6 +27,7 @@
     <p class="intro">
         Mini shop / account demos. Data is stored in <strong>session</strong> (no database).
         PUT / PATCH / DELETE use <code>@@method</code> because browsers only send GET and POST.
+        Also try <a href="{{ route('requestMethods.index') }}">Request class methods</a> (same verbs + <code>$request</code> dump).
     </p>
 
     {{-- 1. VIEW — static About page --}}
