@@ -7,6 +7,7 @@ use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\ElqQueryBuilder;
 use App\Http\Controllers\httpController;
 use App\Http\Controllers\RequestMethodsController;
+use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User_dbController;
@@ -883,3 +884,82 @@ Route::any('/request-methods/any', [RequestMethodsController::class, 'anyExample
 
 Route::post('/request-methods/upload', [RequestMethodsController::class, 'uploadExample'])
     ->name('requestMethods.upload');
+
+
+/*
+|--------------------------------------------------------------------------
+| SESSIONS — your login flow + real-world extras
+|--------------------------------------------------------------------------
+|
+| Start:  /sessions
+|
+| Your original routes:
+|   GET  /sessions/login   → show form
+|   POST /sessions/store   → Session::put(...) then redirect profile
+|   GET  /sessions/profile → Session::get('email') ...
+|   GET  /sessions/logout  → Session::flush()
+|
+| Extra demos on /sessions:
+|   cart, theme, flash + keep/reflash, OTP auto-expire, theory page
+|
+| Theory (flash / API tokens / why DB):  /sessions/theory
+|
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/sessions', [SessionsController::class, 'index'])
+    ->name('sessions.index');
+
+Route::get('/sessions/theory', [SessionsController::class, 'theory'])
+    ->name('sessions.theory');
+
+Route::get('/sessions/login', [SessionsController::class, 'login'])
+    ->name('sessions.login');
+
+Route::post('/sessions/store', [SessionsController::class, 'store'])
+    ->name('sessions.store');
+
+Route::get('/sessions/profile', [SessionsController::class, 'profile'])
+    ->name('sessions.profile');
+
+Route::get('/sessions/logout', [SessionsController::class, 'logout'])
+    ->name('sessions.logout');
+
+Route::post('/sessions/cart/add', [SessionsController::class, 'addToCart'])
+    ->name('sessions.addToCart');
+
+Route::post('/sessions/cart/clear', [SessionsController::class, 'clearCart'])
+    ->name('sessions.clearCart');
+
+Route::post('/sessions/theme', [SessionsController::class, 'saveTheme'])
+    ->name('sessions.saveTheme');
+
+Route::get('/sessions/flash-demo', [SessionsController::class, 'flashDemo'])
+    ->name('sessions.flashDemo');
+
+Route::get('/sessions/flash-now', [SessionsController::class, 'flashNowDemo'])
+    ->name('sessions.flashNowDemo');
+
+Route::get('/sessions/flash-start', [SessionsController::class, 'flashStart'])
+    ->name('sessions.flashStart');
+
+Route::get('/sessions/flash-workshop', [SessionsController::class, 'flashWorkshop'])
+    ->name('sessions.flashWorkshop');
+
+Route::post('/sessions/flash-keep', [SessionsController::class, 'flashKeep'])
+    ->name('sessions.flashKeep');
+
+Route::post('/sessions/flash-reflash', [SessionsController::class, 'flashReflash'])
+    ->name('sessions.flashReflash');
+
+Route::post('/sessions/flash-skip', [SessionsController::class, 'flashSkipKeep'])
+    ->name('sessions.flashSkipKeep');
+
+Route::get('/sessions/flash-after', [SessionsController::class, 'flashAfter'])
+    ->name('sessions.flashAfter');
+
+Route::get('/sessions/otp/start', [SessionsController::class, 'startOtp'])
+    ->name('sessions.startOtp');
+
+Route::get('/sessions/forget-last-product', [SessionsController::class, 'forgetLastProduct'])
+    ->name('sessions.forgetLastProduct');
