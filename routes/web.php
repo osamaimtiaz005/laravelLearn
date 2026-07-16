@@ -9,6 +9,7 @@ use App\Http\Controllers\httpController;
 use App\Http\Controllers\RequestMethodsController;
 use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\UploadFileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User_dbController;
 use Illuminate\Http\Request;
@@ -963,3 +964,39 @@ Route::get('/sessions/otp/start', [SessionsController::class, 'startOtp'])
 
 Route::get('/sessions/forget-last-product', [SessionsController::class, 'forgetLastProduct'])
     ->name('sessions.forgetLastProduct');
+
+/*
+|--------------------------------------------------------------------------
+| FILE UPLOADS
+|--------------------------------------------------------------------------
+| Form:     GET  /upload-files
+| Upload:   POST /upload-files/store
+| List:     GET  /upload-files/display
+| Preview:  GET  /upload-files/preview/{fileName}
+| Download: GET  /upload-files/download/{fileName}
+| Delete:   DELETE /upload-files/{fileName}
+|
+| Need public URLs:  php artisan storage:link
+|--------------------------------------------------------------------------
+*/
+Route::view('/upload-imageform', 'uploadFiles.imageStore');
+Route::post('/upload-image', [UploadFileController::class, 'imageStore']);
+Route::post('/upload-image-fixed-name', [UploadFileController::class, 'withoutRandomName']);
+
+Route::get('/upload-files', [UploadFileController::class, 'showForm'])
+    ->name('uploadFiles.form');
+
+Route::post('/upload-files/store', [UploadFileController::class, 'store'])
+    ->name('uploadFiles.store');
+
+Route::get('/upload-files/display', [UploadFileController::class, 'display'])
+    ->name('uploadFiles.display');
+
+Route::get('/upload-files/download/{fileName}', [UploadFileController::class, 'download'])
+    ->name('uploadFiles.download');
+
+Route::get('/upload-files/preview/{fileName}', [UploadFileController::class, 'preview'])
+    ->name('uploadFiles.preview');
+
+Route::delete('/upload-files/{fileName}', [UploadFileController::class, 'destroy'])
+    ->name('uploadFiles.destroy');
