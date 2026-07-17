@@ -10,6 +10,7 @@ use App\Http\Controllers\RequestMethodsController;
 use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\LocalizationController;
+use App\Http\Controllers\PaginationController;
 use App\Http\Controllers\UploadFileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User_dbController;
@@ -1005,3 +1006,18 @@ Route::delete('/upload-files/{fileName}', [UploadFileController::class, 'destroy
 Route::get('/localization/welcome/{locale}', [LocalizationController::class, 'welcome'])
     ->middleware('locale')
     ->name('localization.welcome');
+
+/*
+|--------------------------------------------------------------------------
+| PAGINATION ROUTE
+|--------------------------------------------------------------------------
+| URL:  /paginate/list
+| Page: /paginate/list?page=2
+|
+| Laravel reads ?page= automatically when you call paginate() / simplePaginate().
+|
+| Examples you can also define:
+|   Route::get('/paginate/list', [PaginationController::class, 'list'])->name('paginate.list');
+|   // Then in Blade: route('paginate.list', ['page' => 2])
+*/
+Route::get('/paginate/list', [PaginationController::class, 'list'])->name('paginate.list');
