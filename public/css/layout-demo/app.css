@@ -1,0 +1,191 @@
+/*
+|--------------------------------------------------------------------------
+| layout-demo / app.css — SHARED site styles (real-world pattern)
+|--------------------------------------------------------------------------
+|
+| WHY a separate CSS file?
+|   - One place for header, footer, buttons, cards (DRY)
+|   - Browser can CACHE this file across pages
+|   - Blade layouts stay clean: link once in layouts/app.blade.php
+|
+| Loaded in layout with:
+|   <link rel="stylesheet" href="{{ asset('css/layout-demo/app.css') }}">
+|
+| asset() → builds URL from /public  (public/css/... → /css/...)
+|
+*/
+
+:root {
+    --bg: #f3f4f6;
+    --surface: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --accent: #0f766e;
+    --accent-soft: #ccfbf1;
+    --border: #e5e7eb;
+    --danger: #b91c1c;
+    --ok: #166534;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ----- Layout shell ----- */
+.site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.brand {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--text);
+}
+
+.nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+}
+
+.nav a.is-active {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.site-main {
+    max-width: 900px;
+    margin: 1.5rem auto;
+    padding: 0 1rem 2.5rem;
+}
+
+.site-footer {
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    background: var(--surface);
+}
+
+/* ----- Reusable UI ----- */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.15rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.card h1,
+.card h2 {
+    margin-top: 0;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.btn {
+    display: inline-block;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.btn:hover {
+    filter: brightness(0.95);
+    text-decoration: none;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.stat {
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 0.85rem;
+}
+
+.stat strong {
+    display: block;
+    font-size: 1.4rem;
+}
+
+.flash {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.flash-success {
+    background: #dcfce7;
+    color: var(--ok);
+}
+
+.flash-error {
+    background: #fee2e2;
+    color: var(--danger);
+}
+
+.explain {
+    background: #fffbeb;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+}
+
+.explain code {
+    background: #fef3c7;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+}
+
+.list {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.list li {
+    margin: 0.35rem 0;
+}

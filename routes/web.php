@@ -9,6 +9,7 @@ use App\Http\Controllers\httpController;
 use App\Http\Controllers\RequestMethodsController;
 use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\LayoutDemoController;
 use App\Http\Controllers\LocalizationController;
 use App\Http\Controllers\PaginationController;
 use App\Http\Controllers\UploadFileController;
@@ -1021,3 +1022,22 @@ Route::get('/localization/welcome/{locale}', [LocalizationController::class, 'we
 |   // Then in Blade: route('paginate.list', ['page' => 2])
 */
 Route::get('/paginate/list', [PaginationController::class, 'list'])->name('paginate.list');
+
+/*
+|--------------------------------------------------------------------------
+| LAYOUT DEMO (separate folder) — CSS / JS / dynamic content
+|--------------------------------------------------------------------------
+| Folder: resources/views/layout-demo/
+| Assets: public/css/layout-demo/  +  public/js/layout-demo/
+|
+|   /layout-demo            → home (layout + shared CSS/JS + page CSS/JS)
+|   /layout-demo/about      → another page, same layout
+|   /layout-demo/dashboard  → dynamic data from controller
+|   /layout-demo/flash      → session flash message demo
+*/
+Route::prefix('layout-demo')->name('layout-demo.')->group(function () {
+    Route::get('/', [LayoutDemoController::class, 'home'])->name('home');
+    Route::get('/about', [LayoutDemoController::class, 'about'])->name('about');
+    Route::get('/dashboard', [LayoutDemoController::class, 'dashboard'])->name('dashboard');
+    Route::get('/flash', [LayoutDemoController::class, 'flash'])->name('flash');
+});
