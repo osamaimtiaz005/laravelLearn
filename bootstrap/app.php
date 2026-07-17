@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\countryCheck;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,9 +26,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // $middleware->append(globalMid::class); // removed — was running on every URL
 
+        // Apply saved locale from session on every web request
+        $middleware->web(append: [
+            SetLocale::class,
+        ]);
+
         $middleware->alias([
             'access.key' => EnsureAccessKey::class,
             'global.mid' => globalMid::class,
+            'locale' => SetLocale::class,
         ]);
         //appendToGroup is used to add Mutiple middlewares to a group alias 
         $middleware->appendToGroup('groupCheck', [EnsureAccessKey::class, countryCheck::class]);

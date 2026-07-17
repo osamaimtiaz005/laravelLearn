@@ -9,6 +9,7 @@ use App\Http\Controllers\httpController;
 use App\Http\Controllers\RequestMethodsController;
 use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\LocalizationController;
 use App\Http\Controllers\UploadFileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User_dbController;
@@ -1000,3 +1001,7 @@ Route::get('/upload-files/preview/{fileName}', [UploadFileController::class, 'pr
 
 Route::delete('/upload-files/{fileName}', [UploadFileController::class, 'destroy'])
     ->name('uploadFiles.destroy');
+
+Route::get('/localization/welcome/{locale}', [LocalizationController::class, 'welcome'])
+    ->middleware('locale')
+    ->name('localization.welcome');
