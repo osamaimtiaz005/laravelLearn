@@ -1041,3 +1041,6 @@ Route::prefix('layout-demo')->name('layout-demo.')->group(function () {
     Route::get('/dashboard', [LayoutDemoController::class, 'dashboard'])->name('dashboard');
     Route::get('/flash', [LayoutDemoController::class, 'flash'])->name('flash');
 });
+
+
+Route::view('/migration', 'migration.explain');
