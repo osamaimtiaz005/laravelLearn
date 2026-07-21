@@ -1,6 +1,7 @@
 <?php
 /*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
+use App\Http\Controllers\AccessorController;
 use App\Http\Controllers\AllrouteController;
 use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\LayoutDemoController;
 use App\Http\Controllers\LocalizationController;
+use App\Http\Controllers\MutatorController;
 use App\Http\Controllers\PaginationController;
 use App\Http\Controllers\UploadFileController;
 use App\Http\Controllers\UserController;
@@ -1044,3 +1046,17 @@ Route::prefix('layout-demo')->name('layout-demo.')->group(function () {
 
 
 Route::view('/migration', 'migration.explain');
+
+/*
+|--------------------------------------------------------------------------
+| Accessors & Mutators demo
+|--------------------------------------------------------------------------
+| GET  /accessors  → list students (accessors format name/email on read)
+| POST /save       → create student (mutator formats name on write)
+|
+| Model logic lives in App\Models\Student:
+|   getNameAttribute / getEmailAttribute  = accessors
+|   setNameAttribute                      = mutator
+*/
+Route::get('/accessors', [AccessorController::class, 'list'])->name('accessor_mutator.index');
+Route::post('/save', [MutatorController::class, 'save'])->name('accessor_mutator.save');

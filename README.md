@@ -48,6 +48,20 @@ hasMany()
 belongsTo()
 belongsToMany()
 
+🔹 Accessors & Mutators (Eloquent attribute formatting)
+
+// Accessor = format on READ  ($student->name)
+public function getNameAttribute($value) {
+    return strtoupper($value);
+}
+
+// Mutator = format on WRITE  ($student->name = 'ali')
+public function setNameAttribute($value) {
+    $this->attributes['name'] = ucfirst($value);
+}
+
+// Demo: GET /accessors  ·  POST /save  ·  see README section V
+
 🔹 5. Blade (View) Syntax
 Blade is template engine for executing laravel code
 
@@ -849,6 +863,17 @@ Short plain-English guide for every topic practiced in this repo.
     - `db:seed` / `db:seed --class=...` / `migrate:fresh --seed`
 - **Why:** Quickly fill tables for learning lists, search, and pagination.
 
+### 13. Accessors & Mutators (`accessors`)
+
+- **What:** Format Eloquent attribute values automatically on **read** (accessor) or **write** (mutator).
+- **Key ideas:**
+    - Accessor = `getNameAttribute($value)` — runs when you read `$student->name`
+    - Mutator = `setNameAttribute($value)` — runs when you assign `$student->name = ...`
+    - Naming: `get` / `set` + ColumnInCamelCase + `Attribute`
+    - Demo: `GET /accessors` (list) · `POST /save` (create)
+    - Files: `Student.php`, `AccessorController`, `MutatorController`, `accessor_mutator/index.blade.php`
+- **Why:** Keep display/storage rules on the model so every page formats data the same way.
+
 ### How topics connect (big picture)
 
 ```
@@ -1620,6 +1645,148 @@ php artisan migrate:refresh --seed
 
 ---
 
+## V. Accessors & Mutators (`accessors`)
+
+**Explain:** An **accessor** formats a value when you **read** it (`$student->name` in PHP/Blade). A **mutator** formats a value when you **write** it (`$student->name = $request->name` before `save()`). Both live on the Eloquent model so every controller/view gets the same rules. Accessors do **not** change the database by themselves; mutators change what gets **stored**.
+
+**One-line memory tip**
+
+| Type | When | Method pattern | Effect |
+|------|------|----------------|--------|
+| Accessor | Read / display | `get{Column}Attribute` | Changes what you **see** |
+| Mutator | Write / save | `set{Column}Attribute` | Changes what you **store** |
+
+**Code — accessors & mutator on `Student`**
+
+```php
+// app/Models/Student.php
+
+// ACCESSOR — runs on READ: {{ $student->name }}
+public function getNameAttribute($value)
+{
+    return strtoupper($value);   // DB "Ali" → view "ALI"
+}
+
+// ACCESSOR — runs on READ: {{ $student->email }}
+public function getEmailAttribute($value)
+{
+    return strtolower($value);   // DB "Ali@Mail.COM" → view "ali@mail.com"
+}
+
+// MUTATOR — runs on WRITE: $student->name = $request->name
+public function setNameAttribute($value)
+{
+    // Must assign into $this->attributes (classic mutator style)
+    $this->attributes['name'] = ucfirst($value);  // form "aLi" → DB "ALi"
+}
+```
+
+**Code — mutator on save (controller)**
+
+```php
+// app/Http/Controllers/MutatorController.php  →  POST /save
+public function save(Request $request)
+{
+    $student = new Student();
+
+    $student->name = $request->name;   // setNameAttribute runs HERE
+    $student->email = $request->email; // no email mutator → stored as typed
+    $student->batch = $request->batch; // no mutator → stored as typed
+
+    $student->save();                  // INSERT uses mutated attributes
+
+    return redirect()
+        ->route('accessor_mutator.index')
+        ->with('success', 'Student created successfully');
+}
+```
+
+**Code — accessors on list (controller + Blade)**
+
+```php
+// app/Http/Controllers/AccessorController.php  →  GET /accessors
+public function list()
+{
+    $students = Student::all(); // SQL loads raw rows; accessors run later on read
+    return view('accessor_mutator.index', compact('students'));
+}
+```
+
+```blade
+{{-- resources/views/accessor_mutator/index.blade.php --}}
+@foreach ($students as $student)
+    {{-- These reads trigger accessors --}}
+    <p>Name: {{ $student->name }}</p>          {{-- UPPERCASE --}}
+    <p>Email: {{ $student->email }}</p>        {{-- lowercase --}}
+    <p>Batch: {{ $student->batch }}</p>        {{-- unchanged --}}
+
+    {{-- Bypass accessor: see exact DB value --}}
+    <p>Raw name: {{ $student->getRawOriginal('name') }}</p>
+@endforeach
+```
+
+**Full flow (try this)**
+
+```
+Form types:  name=aLi   email=Ali@Mail.COM   batch=2024
+     ↓
+MutatorController: $student->name = 'aLi'
+     ↓
+setNameAttribute → attributes['name'] = 'ALi'
+     ↓
+save() → DB stores name="ALi", email="Ali@Mail.COM", batch="2024"
+     ↓
+AccessorController list + Blade reads $student->name / email
+     ↓
+getNameAttribute  → view shows "ALI"
+getEmailAttribute → view shows "ali@mail.com"
+batch             → view shows "2024"
+```
+
+**Routes**
+
+```php
+Route::get('/accessors', [AccessorController::class, 'list'])
+    ->name('accessor_mutator.index');
+
+Route::post('/save', [MutatorController::class, 'save'])
+    ->name('accessor_mutator.save');
+```
+
+**Q/A**
+
+- **Q: Accessor vs Mutator?**  
+  A: Accessor transforms on **retrieve/display**. Mutator transforms on **set/save**. Accessor ≈ view format; mutator ≈ storage format.
+- **Q: Does an accessor update the database?**  
+  A: No. It only changes the value returned in PHP/Blade. Use a mutator (or an update query) to change stored data.
+- **Q: Why must mutators use `$this->attributes['name'] = ...`?**  
+  A: Classic `setXAttribute` does not “return” the value into storage — you write into the model’s attributes array yourself.
+- **Q: When does the accessor run — during `Student::all()` or in the view?**  
+  A: During attribute **read** (e.g. `{{ $student->name }}`). `all()` only loads raw DB values into the model.
+- **Q: How do I see the raw DB value if an accessor exists?**  
+  A: `$student->getRawOriginal('name')` bypasses `getNameAttribute()`.
+- **Q: Naming rule for `permanent_address`?**  
+  A: Accessor `getPermanentAddressAttribute`, mutator `setPermanentAddressAttribute` (underscore → CamelCase).
+- **Q: Can one column have both?**  
+  A: Yes. Write → mutator formats for DB. Later read → accessor formats for display (this demo’s `name` column).
+- **Q: Why put this on the model, not the controller?**  
+  A: One rule, every page. Otherwise each controller would repeat `strtoupper` / `ucfirst`.
+- **Q: Is there a newer Laravel syntax?**  
+  A: Laravel 9+ also has `Attribute::make(get:, set:)`. This project uses classic `getXAttribute` / `setXAttribute` for clear learning.
+
+**Files**
+
+| File | Role |
+|------|------|
+| `app/Models/Student.php` | `getName` / `getEmail` accessors + `setName` mutator |
+| `app/Http/Controllers/MutatorController.php` | POST save — mutator on write |
+| `app/Http/Controllers/AccessorController.php` | GET list — accessors on read |
+| `resources/views/accessor_mutator/index.blade.php` | Form + list demo + notes |
+
+**Try:** `/accessors` · submit name `aLi` · compare phpMyAdmin vs the list page
+
+---
+
 ## New Routes Quick List
 
 | Area | Example URLs |
@@ -1635,6 +1802,7 @@ php artisan migrate:refresh --seed
 | Pagination | `/paginate/list?page=2` |
 | Layout demo | `/layout-demo`, `/dashboard`, `/flash` |
 | Migrations | `/migration` |
+| Accessors & Mutators | `/accessors` (form POST `/save`) |
 
 ---
 
@@ -1645,6 +1813,8 @@ php artisan migrate:refresh --seed
 | `httpController.php` | HTTP client / API |
 | `DBQueryController.php` | Query Builder |
 | `ElqQueryBuilder.php` + `Student.php` | Eloquent CRUD |
+| `AccessorController.php` + `MutatorController.php` | Accessors & mutators |
+| `resources/views/accessor_mutator/index.blade.php` | Accessors & mutators demo |
 | `AllrouteController.php` | HTTP methods |
 | `RequestMethodsController.php` | Request API |
 | `SessionsController.php` | Session & flash |
@@ -1774,7 +1944,7 @@ Topics are listed in the order they were added to this repo.
 | `f8e828b` | Custom model method invoked from `Customer_dbController`                      |
 | `7eb6315` | Inspect model — `php artisan model:show customers`                            |
 
-### 12–22. Advanced topics (after `db-start`) — see **Detailed Code Lessons** above
+### 12–23. Advanced topics (after `db-start`) — see **Detailed Code Lessons** above
 
 | Branch | Tip | Topic |
 |--------|-----|-------|
@@ -1790,6 +1960,7 @@ Topics are listed in the order they were added to this repo.
 | `LayoutCssJs` | `99962c1` | Layout + CSS/JS |
 | `migrations` | `f0954fd` | Migrations create/alter/rollback |
 | *(main)* | `7a8909b` | Seeders — `studentSeeder` + `DatabaseSeeder` |
+| *(main)* | — | Accessors & Mutators — `/accessors` |
 
 ---
 
