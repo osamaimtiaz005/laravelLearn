@@ -13,6 +13,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\LayoutDemoController;
 use App\Http\Controllers\LocalizationController;
 use App\Http\Controllers\MutatorController;
+use App\Http\Controllers\OnetoOneController;
 use App\Http\Controllers\PaginationController;
 use App\Http\Controllers\UploadFileController;
 use App\Http\Controllers\UserController;
@@ -1048,6 +1049,9 @@ Route::prefix('layout-demo')->name('layout-demo.')->group(function () {
 Route::view('/migration', 'migration.explain');
 
 /*
+
+
+
 |--------------------------------------------------------------------------
 | Accessors & Mutators demo
 |--------------------------------------------------------------------------
@@ -1060,3 +1064,43 @@ Route::view('/migration', 'migration.explain');
 */
 Route::get('/accessors', [AccessorController::class, 'list'])->name('accessor_mutator.index');
 Route::post('/save', [MutatorController::class, 'save'])->name('accessor_mutator.save');
+
+/*
+|--------------------------------------------------------------------------
+| ONE TO ONE RELATIONSHIP — line by line
+|--------------------------------------------------------------------------
+|
+| Route::prefix('one-to-one')
+|   Route     = Laravel routing class
+|   ::prefix  = add "/one-to-one" in front of every URL inside the group
+|   Example:  '/' becomes '/one-to-one'
+|             '/users' becomes '/one-to-one/users'
+|
+| ->name('one-to-one.')
+|   name prefix for route() helper
+|   Example: name('index') becomes route name "one-to-one.index"
+|
+| ->controller(OnetoOneController::class)
+|   all methods below live in OnetoOneController
+|   so we write 'index' instead of [OnetoOneController::class, 'index']
+|
+| ->group(function () { ... })
+|   group = put many routes together that share prefix/name/controller
+|
+| Route::get('/', 'index')->name('index');
+|   get     = HTTP GET (browser visit / link click)
+|   '/'     = URL path (full URL = /one-to-one)
+|   'index' = method name in OnetoOneController
+|   name()  = route name for route('one-to-one.index')
+|
+| {id} in URL = dynamic value from browser
+|   /one-to-one/user/5  ?  $id = 5 inside the controller method
+*/
+Route::prefix('one-to-one')->name('one-to-one.')->controller(OnetoOneController::class)->group(function () {
+    Route::get('/', 'index')->name('index');                 // HTML home page
+    Route::get('/users', 'users')->name('users');            // JSON: all users + profile
+    Route::get('/profiles', 'profiles')->name('profiles');   // JSON: all profiles + user
+    Route::get('/user/{id}', 'userProfile')->name('user');   // JSON: one user + profile
+    Route::get('/profile/{id}', 'profileUser')->name('profile'); // JSON: one profile + user
+    Route::get('/create/{id}', 'createProfile')->name('create'); // JSON: create profile
+});

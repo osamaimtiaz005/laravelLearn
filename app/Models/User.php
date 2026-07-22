@@ -46,4 +46,40 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * METHOD NAME: profile
+     *
+     * ROLE IN ONE-TO-ONE = PARENT side
+     *
+     * return $this->hasOne(Profile::class);
+     *   $this     = this User row/object
+     *   ->        = call method
+     *   hasOne    = "I have exactly one related row"
+     *   Profile::class = App\Models\Profile
+     *
+     * How Laravel finds the profile:
+     *   SELECT * FROM profiles WHERE user_id = THIS_USER.id LIMIT 1
+     *
+     * Why method name "profile"?
+     *   So you can write: $user->profile
+     *   And with(): User::with('profile')
+     *
+     * EXAMPLE:
+     *   $user = User::find(1);
+     *   echo $user->profile->phone;
+     *
+     * MISTAKE:
+     *   hasMany() = many profiles (one-to-many)
+     *   hasOne()  = one profile  (one-to-one)  ← use this
+     */
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+
+        // Full form (same meaning):
+        // return $this->hasOne(Profile::class, 'user_id', 'id');
+        //                                     ↑ FK on profiles
+        //                                              ↑ PK on users
+    }
 }
