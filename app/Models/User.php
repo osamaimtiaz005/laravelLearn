@@ -82,4 +82,8 @@ class User extends Authenticatable
         //                                     ↑ FK on profiles
         //                                              ↑ PK on users
     }
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class);
+    }
 }

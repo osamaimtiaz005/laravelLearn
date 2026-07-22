@@ -1067,7 +1067,7 @@ Route::post('/save', [MutatorController::class, 'save'])->name('accessor_mutator
 
 /*
 |--------------------------------------------------------------------------
-| ONE TO ONE RELATIONSHIP — line by line
+| ONE TO ONE RELATIONSHIP ï¿½ line by line
 |--------------------------------------------------------------------------
 |
 | Route::prefix('one-to-one')
@@ -1103,4 +1103,7 @@ Route::prefix('one-to-one')->name('one-to-one.')->controller(OnetoOneController:
     Route::get('/user/{id}', 'userProfile')->name('user');   // JSON: one user + profile
     Route::get('/profile/{id}', 'profileUser')->name('profile'); // JSON: one profile + user
     Route::get('/create/{id}', 'createProfile')->name('create'); // JSON: create profile
+    Route::get('/subscription', 'showSubscription')->name('subscription'); // JSON: show subscription
 });
+
+

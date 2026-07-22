@@ -11,6 +11,7 @@ namespace App\Http\Controllers;
 
 // use = import a class so we can write Profile instead of App\Models\Profile
 use App\Models\Profile; // Profile model = rows in "profiles" table
+use App\Models\Subscription;
 use App\Models\User;    // User model = rows in "users" table
 use Illuminate\Support\Facades\Hash; // Hash = tool to encrypt passwords
 
@@ -246,5 +247,10 @@ class OnetoOneController extends Controller
             'state' => 'Punjab',
             'zip' => '54000',
         ]);
+    }
+    public function showSubscription()
+    {
+        $subscription = User::with('subscription')->get();
+        return $subscription;
     }
 }

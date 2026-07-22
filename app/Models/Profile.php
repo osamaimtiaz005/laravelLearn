@@ -31,6 +31,11 @@ use Illuminate\Database\Eloquent\Model;
  *   Do NOT write hasOne() here.
  *   hasOne() belongs on User (parent).
  *   belongsTo() belongs on Profile (child that has user_id).
+ * What is Mass Assignment?
+ * Mass assignment is the process of assigning multiple model attributes at once using an array, such as with create() or update().
+ * Why does Laravel use $fillable?
+ * To protect against mass assignment vulnerabilities, 
+ * where users could submit values for sensitive columns like is_admin, role, or salary.
  */
 class Profile extends Model
 {
