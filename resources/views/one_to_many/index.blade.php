@@ -137,7 +137,8 @@ Because it passes this test, it is a strict 1-to-many relationship.</pre>
 
     <section>
         <h2>All demo routes</h2>
-        <p><a href="{{ route('one-to-many.index') }}">/one-to-many</a> — this page</p>
+        <p><a href="{{ route('one-to-many.index') }}">/one-to-many</a> — this page (one-to-many / forward)</p>
+        <p><a href="{{ route('many-to-one.index') }}">/many-to-one</a> — many-to-one / belongsTo lesson</p>
         <p><a href="{{ route('one-to-many.users') }}">/one-to-many/users</a> — FORWARD JSON</p>
         <p><a href="{{ route('one-to-many.orders') }}">/one-to-many/orders</a> — BACKWARD JSON</p>
         <p><a href="{{ route('one-to-many.user', 1) }}">/one-to-many/user/1</a> — forward for one user</p>

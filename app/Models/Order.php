@@ -1,7 +1,9 @@
 <?php
 
 // ============================================================
-// FILE: Order.php — BACKWARD side of the Two-Way Test
+// FILE: Order.php
+// MANY-TO-ONE side = belongsTo(User)
+// (same DB link as one-to-many, viewed from the child)
 // ============================================================
 
 namespace App\Models;
@@ -10,59 +12,77 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * ============================================================
- * TWO-WAY TEST — BACKWARD (this model)
+ * MANY-TO-ONE vs ONE-TO-MANY (same relationship!)
  * ============================================================
  *
- * Backward question:
- *   Does a specific order belong to only ONE user?
- *   True → belongsTo(User::class)
+ * ONE-TO-MANY (parent view):
+ *   One User has many Orders
+ *   User::orders() → hasMany(Order::class)
  *
- * Forward lives on User:
- *   Can one user place many orders? → hasMany(Order::class)
+ * MANY-TO-ONE (child view):
+ *   Many Orders belong to one User
+ *   Order::user() → belongsTo(User::class)
  *
- * Both True = strict 1-to-many.
+ * Same tables. Same foreign key: orders.user_id → users.id
+ * Only the STARTING POINT changes:
+ *   Start at User  → call it one-to-many
+ *   Start at Order → call it many-to-one
  *
- * Why NOT User–Product shopping?
- *   Backward fails: one product can be bought by many users
- *   → that is many-to-many, not one-to-many.
+ * Picture:
+ *   Order #101 ─┐
+ *   Order #102 ─┼──► User Ali (id=1)
+ *   Order #103 ─┘
+ *   Many orders → one user  = MANY-TO-ONE
  *
- * Table: orders
- * FK:    user_id → users.id  (single value per order row)
+ * TWO-WAY TEST (same as one-to-many):
+ *   Forward (1→many): one user, many orders     True
+ *   Backward (many→1): one order, only one user True
+ *
+ * Laravel method for many-to-one: belongsTo
+ *
+ * Useful belongsTo helpers:
+ *   $order->user                         // get the one parent
+ *   $order->user()->associate($user)     // point order to another user
+ *   $order->user()->dissociate()         // clear user_id (needs nullable FK)
+ *   Order::with('user')->get()           // eager load parents
+ *   Order::where('user_id', 1)->get()    // all orders of user 1
+ *   Order::whereBelongsTo($user)->get()  // same, nicer API
  */
 class Order extends Model
 {
     /**
      * Mass-assignable columns for create([...]).
-     *
-     * user_id is NOT listed:
-     *   set it safely with $user->orders()->create([...])
-     *   so the form/request cannot pick any user_id freely.
+     * user_id not listed — prefer associate() or $user->orders()->create()
      */
     protected $fillable = [
-        'name',         // short order label / demo name
-        'description',  // order notes
-        'price',        // demo price text (e.g. "430 USD")
+        'name',
+        'description',
+        'price',
     ];
 
     /**
-     * BACKWARD relationship: Order → User
+     * ============================================================
+     * MANY-TO-ONE method: user()
+     * ============================================================
+     *
+     * return $this->belongsTo(User::class);
      *
      * Word by word:
-     *   public function user()
-     *     method name "user" → Laravel looks for column user_id
+     *   $this       = this Order (one of the "many")
+     *   belongsTo   = "I belong to one parent"  ← many-to-one in English
+     *   User::class = the "one" side
      *
-     *   return $this->belongsTo(User::class);
-     *     $this      = this one Order row
-     *     belongsTo  = "I belong to one parent"
-     *     User::class = App\Models\User
+     * Method name user() → Laravel looks for user_id column
      *
-     * Two-Way Test (Backward):
-     *   $order->user;     // ONE user object (not a list)
-     *   // An order cannot belong to multiple users.
+     * Examples:
+     *   $order = Order::find(1);
+     *   echo $order->user->name;     // the one owner
+     *   echo $order->user_id;        // FK value
      */
     public function user()
     {
         return $this->belongsTo(User::class);
         // Full form: return $this->belongsTo(User::class, 'user_id', 'id');
+        //                                          ↑ FK on orders     ↑ PK on users
     }
 }

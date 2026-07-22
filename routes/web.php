@@ -14,6 +14,7 @@ use App\Http\Controllers\LayoutDemoController;
 use App\Http\Controllers\LocalizationController;
 use App\Http\Controllers\MutatorController;
 use App\Http\Controllers\OnetoManyController;
+use App\Http\Controllers\ManyToOneController;
 use App\Http\Controllers\OnetoOneController;
 use App\Http\Controllers\PaginationController;
 use App\Http\Controllers\UploadFileController;
@@ -1125,4 +1126,26 @@ Route::prefix('one-to-many')->name('one-to-many.')->controller(OnetoManyControll
     Route::get('/order/{id}', 'orderUser')->name('order');     // BACKWARD one order
     Route::get('/create/{id}', 'createOrder')->name('create'); // prove Forward (add more)
     Route::get('/count/{id}', 'orderCount')->name('count');    // helpers
+});
+
+/*
+|--------------------------------------------------------------------------
+| MANY TO ONE — Order belongsTo User
+|--------------------------------------------------------------------------
+|
+| Same DB as one-to-many; start from the child (Order).
+| Many orders → one user. Laravel: belongsTo.
+|
+| GET /many-to-one                         HTML lesson
+| GET /many-to-one/orders                  all orders + user
+| GET /many-to-one/order/{id}              one order → one user
+| GET /many-to-one/for-user/{userId}       many orders of one user
+| GET /many-to-one/associate/{orderId}/{userId}  change owner
+*/
+Route::prefix('many-to-one')->name('many-to-one.')->controller(ManyToOneController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/orders', 'orders')->name('orders');
+    Route::get('/order/{id}', 'order')->name('order');
+    Route::get('/for-user/{userId}', 'forUser')->name('for-user');
+    Route::get('/associate/{orderId}/{userId}', 'associate')->name('associate');
 });

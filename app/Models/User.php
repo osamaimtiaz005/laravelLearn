@@ -111,6 +111,10 @@ class User extends Authenticatable
      *
      * Both True = strict 1-to-many.
      *
+     * Other name of the SAME link (from Order side):
+     *   MANY-TO-ONE → Order::user() belongsTo(User::class)
+     *   Demo page: /many-to-one
+     *
      * return $this->hasMany(Order::class);
      *   $this     = this User
      *   hasMany   = "I have many child rows"
