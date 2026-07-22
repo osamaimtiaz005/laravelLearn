@@ -13,6 +13,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\LayoutDemoController;
 use App\Http\Controllers\LocalizationController;
 use App\Http\Controllers\MutatorController;
+use App\Http\Controllers\OnetoManyController;
 use App\Http\Controllers\OnetoOneController;
 use App\Http\Controllers\PaginationController;
 use App\Http\Controllers\UploadFileController;
@@ -1107,3 +1108,21 @@ Route::prefix('one-to-one')->name('one-to-one.')->controller(OnetoOneController:
 });
 
 
+/*
+|--------------------------------------------------------------------------
+| ONE TO MANY — User → Orders + Two-Way Test
+|--------------------------------------------------------------------------
+|
+| Forward:  one user can place many orders          → /users , /user/{id}
+| Backward: one order belongs to only one user      → /orders , /order/{id}
+| Both True = strict 1-to-many (see Blade at /one-to-many)
+*/
+Route::prefix('one-to-many')->name('one-to-many.')->controller(OnetoManyController::class)->group(function () {
+    Route::get('/', 'index')->name('index');                 // HTML: Two-Way Test
+    Route::get('/users', 'oneToMany')->name('users');          // FORWARD JSON
+    Route::get('/orders', 'manyToOne')->name('orders');        // BACKWARD JSON
+    Route::get('/user/{id}', 'userOrders')->name('user');      // FORWARD one user
+    Route::get('/order/{id}', 'orderUser')->name('order');     // BACKWARD one order
+    Route::get('/create/{id}', 'createOrder')->name('create'); // prove Forward (add more)
+    Route::get('/count/{id}', 'orderCount')->name('count');    // helpers
+});

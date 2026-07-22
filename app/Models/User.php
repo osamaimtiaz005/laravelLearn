@@ -4,10 +4,20 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * IDE stubs (Intelephense): optional Eloquent args look "required" without these.
+ *
+ * @method static Builder|User query()
+ * @method static Builder|User inRandomOrder(string|null $seed = null)
+ * @method static User|null first(array|string $columns = ['*'])
+ * @method static User|null find(mixed $id, array|string $columns = ['*'])
+ * @method static User create(array $attributes = [])
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -85,5 +95,39 @@ class User extends Authenticatable
     public function subscription()
     {
         return $this->hasOne(Subscription::class);
+    }
+
+    /**
+     * ============================================================
+     * TWO-WAY TEST — FORWARD (this method)
+     * ============================================================
+     *
+     * Forward question:
+     *   Can one user place many orders over time?
+     *   True → hasMany(Order::class)
+     *
+     * Backward lives on Order:
+     *   Does one order belong to only one user? → belongsTo(User::class)
+     *
+     * Both True = strict 1-to-many.
+     *
+     * return $this->hasMany(Order::class);
+     *   $this     = this User
+     *   hasMany   = "I have many child rows"
+     *   Order::class = App\Models\Order
+     *
+     * SQL: SELECT * FROM orders WHERE user_id = THIS_USER.id
+     *
+     * Usage (Forward):
+     *   $user->orders;                 // list of orders
+     *   $user->orders()->count();
+     *   $user->orders()->create([...]); // insert + set user_id
+     *   User::with('orders')->get();
+     *   User::withCount('orders')->get();
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+        // Full form: return $this->hasMany(Order::class, 'user_id', 'id');
     }
 }
