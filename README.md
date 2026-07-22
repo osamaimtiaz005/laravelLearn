@@ -668,7 +668,7 @@ Components UI blocks very high modern
 A hands-on Laravel 12 learning repository. Each commit (and topic branch) adds a small, commented example so you can follow routing, Blade, controllers, forms, validation, middleware, and Eloquent step by step.
 
 **Stack:** PHP 8.2+, Laravel 12, Blade, MySQL/XAMPP-friendly local setup  
-**Current tip:** `main` → `7a8909b` (seeders; migrations tip was `f0954fd`)
+**Current tip:** `main` → `f79c3c4` (one-to-one + subscription)
 
 ---
 
@@ -882,6 +882,14 @@ Short plain-English guide for every topic practiced in this repo.
     - Demo: `GET /accessors` (list) · `POST /save` (create)
     - Files: `Student.php`, `AccessorController`, `MutatorController`, `accessor_mutator/index.blade.php`
 - **Why:** Keep display/storage rules on the model so every page formats data the same way.
+
+### 15. Eloquent Relations & One-to-One (`one-to-one`)
+
+- **What:** Link two tables so one User has one Profile (and optionally one Subscription).
+- **Key ideas:** FK `user_id` on child · parent `hasOne` · child `belongsTo` · `unique()` · `with('profile')` · `$user->profile()->create()`
+- **Flow:** migration → models → controller → `/one-to-one` routes
+- **Common mistakes:** FK on wrong table, `hasMany` instead of `hasOne`, missing `unique`/`$fillable`, create without user link, N+1, null crash
+- **Why:** Load related data as objects without writing SQL joins.
 
 ### How topics connect (big picture)
 
@@ -1900,6 +1908,198 @@ Route::post('/save', [MutatorController::class, 'save'])
 | `resources/views/accessor_mutator/index.blade.php` | Form + list demo + notes |
 
 **Try:** `/accessors` · submit name `aLi` · compare phpMyAdmin vs the list page
+
+---
+
+## X. Eloquent Relations & One-to-One (`one-to-one`)
+
+**Explain:** A **relation** links two tables through Eloquent so you can write `$user->profile` instead of manual joins.  
+**One-to-one** means: one parent row has **exactly one** child row (User → Profile, User → Subscription). The **foreign key** (`user_id`) lives on the **child** table.
+
+### Simple picture
+
+```
+users (parent)                  profiles (child)
+id | name                       id | user_id | phone | city
+1  | Ali          ←───────────  1  |    1    | 0300  | Lahore
+
+User::hasOne(Profile)           Profile::belongsTo(User)
+```
+
+### Flow — how to make a one-to-one (step by step)
+
+1. **Parent table exists** (e.g. `users` from Laravel default migration).
+2. **Create child migration** with `user_id` FK + usually `unique()` for true 1-1.
+3. **`php artisan migrate`**
+4. **Create child model** (`Profile`) with `$fillable` including `user_id` + fields.
+5. **Parent model:** `hasOne(Profile::class)` method named `profile()`.
+6. **Child model:** `belongsTo(User::class)` method named `user()`.
+7. **Controller / routes:** use `$user->profile`, `User::with('profile')->get()`, `$user->profile()->create([...])`.
+
+### Commands
+
+```bash
+php artisan make:model Profile -m
+# edit migration: foreignId('user_id')->constrained('users')->cascadeOnDelete()->unique()
+php artisan migrate
+
+php artisan make:controller OnetoOneController
+# optional second 1-1:
+php artisan make:model Subscription -m
+```
+
+### Migration (child table — FK goes HERE)
+
+```php
+Schema::create('profiles', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')
+        ->constrained('users')   // must exist in users.id
+        ->cascadeOnDelete()      // delete profile if user deleted
+        ->unique();              // true one-to-one (one user_id once)
+    $table->string('phone')->nullable();
+    $table->string('address')->nullable();
+    $table->string('city')->nullable();
+    $table->timestamps();
+});
+```
+
+**Delete options on FK**
+
+| Method | When parent (user) is deleted |
+|--------|-------------------------------|
+| `cascadeOnDelete()` | Child row deleted too (used in this project) |
+| `nullOnDelete()` | Child stays; `user_id` becomes NULL (needs `nullable()`) |
+| `restrictOnDelete()` | MySQL blocks deleting user while profile exists |
+
+### Models
+
+```php
+// User.php (PARENT) — hasOne
+public function profile()
+{
+    return $this->hasOne(Profile::class);
+    // same as: hasOne(Profile::class, 'user_id', 'id');
+}
+
+public function subscription()
+{
+    return $this->hasOne(Subscription::class); // second 1-1 example
+}
+
+// Profile.php (CHILD) — belongsTo
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
+// Subscription.php (CHILD) — belongsTo
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
+```
+
+### Using the relation (controller patterns)
+
+```php
+// Eager load (best — avoids N+1 queries)
+$users = User::with('profile')->get();
+$user  = User::with('profile')->find($id);
+
+// Access related model (lazy load if not eager)
+$phone = $user->profile->phone;     // null if no profile → error if you chain blindly
+$user->profile;                     // Profile model OR null
+
+// Create related row — Laravel sets user_id automatically
+$profile = $user->profile()->create([
+    'phone' => '+92-300-0000000',
+    'city' => 'Lahore',
+]);
+
+// Reverse direction
+$profile = Profile::with('user')->find($id);
+$name = $profile->user->name;
+```
+
+**`$user->profile` vs `$user->profile()`**
+
+| Code | Meaning |
+|------|---------|
+| `$user->profile` | Related **model** (or null) — for reading |
+| `$user->profile()` | Relationship **query** — for `create`, `save`, `update` |
+
+### Routes in this project
+
+| URL | What it does |
+|-----|----------------|
+| `/one-to-one` | Blade demo: users+profiles |
+| `/one-to-one/users` | JSON: all users with profile |
+| `/one-to-one/profiles` | JSON: all profiles with user |
+| `/one-to-one/user/{id}` | JSON: one user + profile |
+| `/one-to-one/profile/{id}` | JSON: one profile + user |
+| `/one-to-one/create/{id}` | Create profile for user (if none) |
+| `/one-to-one/subscription` | JSON: users with subscription |
+
+### Common mistakes (very important)
+
+1. **FK on the wrong table**  
+   ❌ Putting `profile_id` on `users` for this style  
+   ✅ Put `user_id` on `profiles` (child)
+
+2. **Wrong relation method**  
+   ❌ `Profile` uses `hasOne(User::class)`  
+   ✅ Parent `hasOne`, child `belongsTo`
+
+3. **`hasMany` instead of `hasOne`**  
+   ❌ One user → many profiles  
+   ✅ `hasOne` for one-to-one
+
+4. **Forgot `unique()` on `user_id`**  
+   Without unique, DB allows many profiles per user → becomes one-to-many in practice
+
+5. **Forgot `$fillable`**  
+   `create([...])` silently fails / MassAssignmentException if `phone`, `user_id` not fillable
+
+6. **Creating without linking user**  
+   ❌ `Profile::create(['phone' => '...']);` // no user_id  
+   ✅ `$user->profile()->create(['phone' => '...']);`
+
+7. **Creating a second profile**  
+   Always check `$user->profile` first — one-to-one means only one
+
+8. **N+1 problem**  
+   ❌ Loop users and call `$user->profile` each time without `with()`  
+   ✅ `User::with('profile')->get()`
+
+9. **Null crash**  
+   ❌ `$user->profile->phone` when profile is null  
+   ✅ `optional($user->profile)->phone` or `if ($user->profile)`
+
+10. **Method name ≠ with() string**  
+    Relation method `profile()` → must use `with('profile')` (same name)
+
+11. **Table name mismatch**  
+    Model `Profile` expects table `profiles` (plural)
+
+### Q/A
+
+- **Q: What is a relation?**  
+  A: An Eloquent method that describes how two models connect (`hasOne`, `belongsTo`, later `hasMany`, `belongsToMany`).
+- **Q: Who is parent / child?**  
+  A: Parent = User (no FK for this link). Child = Profile (has `user_id`).
+- **Q: Why `unique()` on `user_id`?**  
+  A: Database enforces one profile per user — real one-to-one.
+- **Q: Can one User have two one-to-one relations?**  
+  A: Yes — e.g. `profile()` and `subscription()` both `hasOne`.
+- **Q: `with('profile')` vs `$user->profile`?**  
+  A: `with` loads in one query for many rows. Property access loads when you need it (lazy).
+
+**Files:** `User.php` · `Profile.php` · `Subscription.php` · `OnetoOneController.php` · `create_profiles_table` migration  
+**Commits:** `cfb44db` (User↔Profile) · `f79c3c4` (Subscription)
+
+**Try:** `/one-to-one` · `/one-to-one/users` · `/one-to-one/create/1` · `/one-to-one/subscription`
+
 ---
 
 ## New Routes Quick List
@@ -1918,6 +2118,7 @@ Route::post('/save', [MutatorController::class, 'save'])
 | Layout demo | `/layout-demo`, `/dashboard`, `/flash` |
 | Migrations | `/migration` |
 | Accessors & Mutators | `/accessors` (form POST `/save`) |
+| One-to-One | `/one-to-one`, `/users`, `/create/{id}`, `/subscription` |
 
 ---
 
@@ -1930,6 +2131,9 @@ Route::post('/save', [MutatorController::class, 'save'])
 | `ElqQueryBuilder.php` + `Student.php` | Eloquent CRUD |
 | `AccessorController.php` + `MutatorController.php` | Accessors & mutators |
 | `resources/views/accessor_mutator/index.blade.php` | Accessors & mutators demo |
+| `User.php` + `Profile.php` + `Subscription.php` | One-to-one relations |
+| `OnetoOneController.php` | One-to-one demos + create profile |
+| `create_profiles_table` / `create_subscriptions_table` | FK + unique migrations |
 | `AllrouteController.php` | HTTP methods |
 | `RequestMethodsController.php` | Request API |
 | `SessionsController.php` | Session & flash |
@@ -2077,6 +2281,7 @@ Topics are listed in the order they were added to this repo.
 | *(main)* | `7a8909b` | Seeders — `studentSeeder` + `DatabaseSeeder` |
 | *(main)* | `859b4bf` | Maintenance Mode — `down` / `up` |
 | *(main)* | — | Accessors & Mutators — `/accessors` |
+| *(main)* | `cfb44db` / `f79c3c4` | One-to-One — User↔Profile, User↔Subscription |
 
 ---
 
