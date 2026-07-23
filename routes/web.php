@@ -1175,4 +1175,6 @@ Route::prefix('many-to-many')->name('many-to-many.')->controller(ManyToManyContr
     Route::get('/toggle/{userId}/{roleId}', 'toggle')->name('toggle');
     Route::get('/pivot/{userId}/{roleId}', 'updatePivot')->name('pivot');
     Route::get('/where-pivot/{userId}', 'wherePivot')->name('where-pivot');
+    Route::get('/teams', 'teams')->name('teams');
+    
 });

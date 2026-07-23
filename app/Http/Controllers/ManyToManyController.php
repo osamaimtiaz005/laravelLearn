@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 
 // use = import models so we can write Role / User (not full path each time)
 use App\Models\Role; // Role model → roles table
+use App\Models\Team;
 use App\Models\User; // User model → users table
 
 /**
@@ -648,5 +649,44 @@ class ManyToManyController extends Controller
         // Editor was created so it exists for demos even if unused yet
         // unset($editor) = drop the local variable (role stays in DB)
         unset($editor);
+    }
+
+    /**
+     * GET /many-to-many/teams (or whatever route you wired)
+     *
+     * WHY THE ERROR HAPPENED:
+     *   unique(team_id, user_id) on team_user means one user can join
+     *   the same team only ONCE.
+     *   attach() always INSERTs → second run (or random() picks same team)
+     *   → Duplicate entry '2-1'
+     *
+     * FIX: syncWithoutDetaching() = add link if missing, ignore if exists
+     *   (same idea we used for roles)
+     */
+    public function teams()
+    {
+        $users = User::all();
+        $teams = Team::all();
+
+        if ($teams->isEmpty()) {
+            return response()->json(['message' => 'No teams found. Seed teams first.'], 404);
+        }
+
+        foreach ($users as $user) {
+            // BAD (your old code): always INSERT → can duplicate
+            // $user->teams()->attach($teams->random()->id);
+
+            // GOOD: add only if not already linked
+            $user->teams()->syncWithoutDetaching([
+                $teams->random()->id,
+            ]);
+        }
+
+        // User::with('teams')->get() = all users + their teams
+        // NOT $user->with(...) — with() is a static/query starter on the model class
+        return response()->json([
+            'message' => 'Linked each user to a random team (no duplicates)',
+            'user_teams' => User::with('teams')->get(),
+        ]);
     }
 }

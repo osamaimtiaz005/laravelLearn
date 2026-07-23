@@ -184,4 +184,8 @@ class User extends Authenticatable
         //     ->withPivot('is_active', 'notes')
         //     ->withTimestamps();
     }
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class);
+    }
 }
