@@ -13,8 +13,9 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\LayoutDemoController;
 use App\Http\Controllers\LocalizationController;
 use App\Http\Controllers\MutatorController;
-use App\Http\Controllers\OnetoManyController;
+use App\Http\Controllers\ManyToManyController;
 use App\Http\Controllers\ManyToOneController;
+use App\Http\Controllers\OnetoManyController;
 use App\Http\Controllers\OnetoOneController;
 use App\Http\Controllers\PaginationController;
 use App\Http\Controllers\UploadFileController;
@@ -1148,4 +1149,30 @@ Route::prefix('many-to-one')->name('many-to-one.')->controller(ManyToOneControll
     Route::get('/order/{id}', 'order')->name('order');
     Route::get('/for-user/{userId}', 'forUser')->name('for-user');
     Route::get('/associate/{orderId}/{userId}', 'associate')->name('associate');
+});
+
+/*
+|--------------------------------------------------------------------------
+| MANY TO MANY — User ↔ Role (belongsToMany + pivot role_user)
+|--------------------------------------------------------------------------
+|
+| Two-Way Test:
+|   Forward:  one user → many roles   True
+|   Backward: one role → many users   True
+|
+| Useful: attach, detach, sync, syncWithoutDetaching, toggle,
+|         updateExistingPivot, wherePivot, withPivot
+*/
+Route::prefix('many-to-many')->name('many-to-many.')->controller(ManyToManyController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/users', 'users')->name('users');
+    Route::get('/roles', 'roles')->name('roles');
+    Route::get('/user/{id}', 'userRoles')->name('user');
+    Route::get('/role/{id}', 'roleUsers')->name('role');
+    Route::get('/attach/{userId}/{roleId}', 'attach')->name('attach');
+    Route::get('/detach/{userId}/{roleId}', 'detach')->name('detach');
+    Route::get('/sync/{userId}/{roleIds}', 'sync')->name('sync'); // roleIds e.g. 1,2
+    Route::get('/toggle/{userId}/{roleId}', 'toggle')->name('toggle');
+    Route::get('/pivot/{userId}/{roleId}', 'updatePivot')->name('pivot');
+    Route::get('/where-pivot/{userId}', 'wherePivot')->name('where-pivot');
 });

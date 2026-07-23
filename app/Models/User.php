@@ -134,4 +134,54 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
         // Full form: return $this->hasMany(Order::class, 'user_id', 'id');
     }
+
+    /**
+     * ============================================================
+     * MANY-TO-MANY — User ↔ Role (belongsToMany)
+     * ============================================================
+     *
+     * WHAT IS A PIVOT?
+     *   The middle table (role_user) that stores each User–Role link.
+     *   Without it, you cannot model “many users ↔ many roles”.
+     *
+     *   users          role_user (PIVOT)           roles
+     *   id=1 Ali       user_id=1, role_id=1   →    Admin
+     *                  user_id=1, role_id=2   →    Editor
+     *   id=2 Sara      user_id=2, role_id=1   →    Admin
+     *
+     *   Each pivot row = one link. Extra columns = data about the link
+     *   (is_active, notes) via withPivot / $role->pivot->notes
+     *
+     *   attach = insert pivot row | detach = delete pivot row
+     *
+     * Two-Way Test:
+     *   Forward:  one user can have many roles?     True
+     *   Backward: one role can have many users?     True
+     *   → MANY-TO-MANY (pivot: role_user)
+     *
+     * Useful methods (practice on /many-to-many):
+     *   $user->roles;                              // Collection
+     *   $user->roles()->attach($roleId);           // add link
+     *   $user->roles()->attach($roleId, ['notes' => 'vip']);
+     *   $user->roles()->detach($roleId);           // remove link
+     *   $user->roles()->detach();                  // remove all
+     *   $user->roles()->sync([1, 2]);              // exact set (drops others)
+     *   $user->roles()->syncWithoutDetaching([3]); // add without dropping
+     *   $user->roles()->toggle([1, 2]);            // add if missing / remove if present
+     *   $user->roles()->updateExistingPivot($id, ['is_active' => false]);
+     *   $user->roles()->wherePivot('is_active', true)->get();
+     *   User::with('roles')->get();
+     *   User::withCount('roles')->get();
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class)
+            ->withPivot('is_active', 'notes')
+            ->withTimestamps();
+
+        // Full form:
+        // return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id')
+        //     ->withPivot('is_active', 'notes')
+        //     ->withTimestamps();
+    }
 }

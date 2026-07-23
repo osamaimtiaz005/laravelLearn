@@ -33,6 +33,9 @@ class DatabaseSeeder extends Seeder
         // Prefer running user seed / factory before this if users table is empty
         $this->call(orderSeeder::class);
 
+        // MANY-TO-MANY demo: roles + role_user pivot links
+        $this->call(RoleSeeder::class);
+
         // Other learning seeders
         $this->call(subscriptionSeeder::class);
         $this->call(userSeeder::class);

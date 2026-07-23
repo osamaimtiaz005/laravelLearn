@@ -50,17 +50,17 @@ belongsToMany()
 
 🔹 Accessors & Mutators (Eloquent attribute formatting)
 
-// Accessor = format on READ  ($student->name)
+// Accessor = format on READ ($student->name)
 public function getNameAttribute($value) {
-    return strtoupper($value);
+return strtoupper($value);
 }
 
-// Mutator = format on WRITE  ($student->name = 'ali')
+// Mutator = format on WRITE ($student->name = 'ali')
 public function setNameAttribute($value) {
-    $this->attributes['name'] = ucfirst($value);
+$this->attributes['name'] = ucfirst($value);
 }
 
-// Demo: GET /accessors  ·  POST /save  ·  see README section V
+// Demo: GET /accessors · POST /save · see README section V
 
 🔹 5. Blade (View) Syntax
 Blade is template engine for executing laravel code
@@ -727,7 +727,7 @@ Each feature/topic was developed on its own branch, then merged into `main`. Tip
 | `eloquent-queryBuilder`   | `614bbd6`  | `Student` model — `all`, `find`, `where`, `create`, `update`, `delete`    |
 | `route-methods`           | `32dbb5d`  | GET/POST/PUT/PATCH/DELETE/ANY/MATCH via `AllrouteController`              |
 | `allRequestMethods`       | `36c992e`  | `Illuminate\Http\Request` methods — input, query, headers, files          |
-| `Sessions`                | `ea87a34`  | Session put/get/flash/forget/flush — login / profile demos                 |
+| `Sessions`                | `ea87a34`  | Session put/get/flash/forget/flush — login / profile demos                |
 | `upload-files`            | `10fb3a6`  | File upload, `store` / `storeAs`, Storage, download, delete               |
 | `localization`            | `a0c2e70`  | Multi-language with locale + `SetLocale` middleware + session             |
 | `pagination`              | `ffccd21`  | `paginate()`, page links, `?page=`                                        |
@@ -1746,17 +1746,17 @@ php artisan down --secret="deploy-2026" --refresh=30 --retry=60
 
 ### Quick cheatsheet
 
-| Command / option | Meaning |
-|------------------|---------|
-| `php artisan down` | Turn maintenance ON |
-| `php artisan up` | Turn maintenance OFF |
-| `--secret="key"` | Bypass via `/key` then cookie |
-| `--with-secret` | Auto-generate bypass key |
-| `--refresh=30` | Browser auto-reload every 30s |
-| `--retry=60` | Retry-After: 60 seconds |
-| `--redirect=/` | Send users to a path |
-| `--render="view"` | Custom maintenance page |
-| `--status=503` | HTTP status code |
+| Command / option   | Meaning                       |
+| ------------------ | ----------------------------- |
+| `php artisan down` | Turn maintenance ON           |
+| `php artisan up`   | Turn maintenance OFF          |
+| `--secret="key"`   | Bypass via `/key` then cookie |
+| `--with-secret`    | Auto-generate bypass key      |
+| `--refresh=30`     | Browser auto-reload every 30s |
+| `--retry=60`       | Retry-After: 60 seconds       |
+| `--redirect=/`     | Send users to a path          |
+| `--render="view"`  | Custom maintenance page       |
+| `--status=503`     | HTTP status code              |
 
 **Try (local):**
 
@@ -1775,10 +1775,10 @@ php artisan up
 
 **One-line memory tip**
 
-| Type | When | Method pattern | Effect |
-|------|------|----------------|--------|
-| Accessor | Read / display | `get{Column}Attribute` | Changes what you **see** |
-| Mutator | Write / save | `set{Column}Attribute` | Changes what you **store** |
+| Type     | When           | Method pattern         | Effect                     |
+| -------- | -------------- | ---------------------- | -------------------------- |
+| Accessor | Read / display | `get{Column}Attribute` | Changes what you **see**   |
+| Mutator  | Write / save   | `set{Column}Attribute` | Changes what you **store** |
 
 **Code — accessors & mutator on `Student`**
 
@@ -1900,12 +1900,12 @@ Route::post('/save', [MutatorController::class, 'save'])
 
 **Files**
 
-| File | Role |
-|------|------|
-| `app/Models/Student.php` | `getName` / `getEmail` accessors + `setName` mutator |
-| `app/Http/Controllers/MutatorController.php` | POST save — mutator on write |
-| `app/Http/Controllers/AccessorController.php` | GET list — accessors on read |
-| `resources/views/accessor_mutator/index.blade.php` | Form + list demo + notes |
+| File                                               | Role                                                 |
+| -------------------------------------------------- | ---------------------------------------------------- |
+| `app/Models/Student.php`                           | `getName` / `getEmail` accessors + `setName` mutator |
+| `app/Http/Controllers/MutatorController.php`       | POST save — mutator on write                         |
+| `app/Http/Controllers/AccessorController.php`      | GET list — accessors on read                         |
+| `resources/views/accessor_mutator/index.blade.php` | Form + list demo + notes                             |
 
 **Try:** `/accessors` · submit name `aLi` · compare phpMyAdmin vs the list page
 
@@ -1966,11 +1966,11 @@ Schema::create('profiles', function (Blueprint $table) {
 
 **Delete options on FK**
 
-| Method | When parent (user) is deleted |
-|--------|-------------------------------|
-| `cascadeOnDelete()` | Child row deleted too (used in this project) |
-| `nullOnDelete()` | Child stays; `user_id` becomes NULL (needs `nullable()`) |
-| `restrictOnDelete()` | MySQL blocks deleting user while profile exists |
+| Method               | When parent (user) is deleted                            |
+| -------------------- | -------------------------------------------------------- |
+| `cascadeOnDelete()`  | Child row deleted too (used in this project)             |
+| `nullOnDelete()`     | Child stays; `user_id` becomes NULL (needs `nullable()`) |
+| `restrictOnDelete()` | MySQL blocks deleting user while profile exists          |
 
 ### Models
 
@@ -2024,22 +2024,22 @@ $name = $profile->user->name;
 
 **`$user->profile` vs `$user->profile()`**
 
-| Code | Meaning |
-|------|---------|
-| `$user->profile` | Related **model** (or null) — for reading |
+| Code               | Meaning                                                 |
+| ------------------ | ------------------------------------------------------- |
+| `$user->profile`   | Related **model** (or null) — for reading               |
 | `$user->profile()` | Relationship **query** — for `create`, `save`, `update` |
 
 ### Routes in this project
 
-| URL | What it does |
-|-----|----------------|
-| `/one-to-one` | Blade demo: users+profiles |
-| `/one-to-one/users` | JSON: all users with profile |
-| `/one-to-one/profiles` | JSON: all profiles with user |
-| `/one-to-one/user/{id}` | JSON: one user + profile |
-| `/one-to-one/profile/{id}` | JSON: one profile + user |
-| `/one-to-one/create/{id}` | Create profile for user (if none) |
-| `/one-to-one/subscription` | JSON: users with subscription |
+| URL                        | What it does                      |
+| -------------------------- | --------------------------------- |
+| `/one-to-one`              | Blade demo: users+profiles        |
+| `/one-to-one/users`        | JSON: all users with profile      |
+| `/one-to-one/profiles`     | JSON: all profiles with user      |
+| `/one-to-one/user/{id}`    | JSON: one user + profile          |
+| `/one-to-one/profile/{id}` | JSON: one profile + user          |
+| `/one-to-one/create/{id}`  | Create profile for user (if none) |
+| `/one-to-one/subscription` | JSON: users with subscription     |
 
 ### Common mistakes (very important)
 
@@ -2104,47 +2104,47 @@ $name = $profile->user->name;
 
 ## New Routes Quick List
 
-| Area | Example URLs |
-|------|----------------|
-| HTTP Client | `/http-controller` |
-| Query Builder | `/db-query-builder/all`, `/byid/{id}`, search/sort |
-| Eloquent | `/elqQueryBuilder/studentList`, add/update/delete/search |
-| Route methods | `/allroute` |
-| Request methods | `/request-methods` |
-| Sessions | `/sessions`, login, profile, flash demos |
-| Uploads | `/upload-files` |
-| Localization | `/localization/welcome/{locale}` |
-| Pagination | `/paginate/list?page=2` |
-| Layout demo | `/layout-demo`, `/dashboard`, `/flash` |
-| Migrations | `/migration` |
-| Accessors & Mutators | `/accessors` (form POST `/save`) |
-| One-to-One | `/one-to-one`, `/users`, `/create/{id}`, `/subscription` |
+| Area                 | Example URLs                                             |
+| -------------------- | -------------------------------------------------------- |
+| HTTP Client          | `/http-controller`                                       |
+| Query Builder        | `/db-query-builder/all`, `/byid/{id}`, search/sort       |
+| Eloquent             | `/elqQueryBuilder/studentList`, add/update/delete/search |
+| Route methods        | `/allroute`                                              |
+| Request methods      | `/request-methods`                                       |
+| Sessions             | `/sessions`, login, profile, flash demos                 |
+| Uploads              | `/upload-files`                                          |
+| Localization         | `/localization/welcome/{locale}`                         |
+| Pagination           | `/paginate/list?page=2`                                  |
+| Layout demo          | `/layout-demo`, `/dashboard`, `/flash`                   |
+| Migrations           | `/migration`                                             |
+| Accessors & Mutators | `/accessors` (form POST `/save`)                         |
+| One-to-One           | `/one-to-one`, `/users`, `/create/{id}`, `/subscription` |
 
 ---
 
 ## New Key Files
 
-| File | Topic |
-|------|--------|
-| `httpController.php` | HTTP client / API |
-| `DBQueryController.php` | Query Builder |
-| `ElqQueryBuilder.php` + `Student.php` | Eloquent CRUD |
-| `AccessorController.php` + `MutatorController.php` | Accessors & mutators |
-| `resources/views/accessor_mutator/index.blade.php` | Accessors & mutators demo |
-| `User.php` + `Profile.php` + `Subscription.php` | One-to-one relations |
-| `OnetoOneController.php` | One-to-one demos + create profile |
-| `create_profiles_table` / `create_subscriptions_table` | FK + unique migrations |
-| `AllrouteController.php` | HTTP methods |
-| `RequestMethodsController.php` | Request API |
-| `SessionsController.php` | Session & flash |
-| `UploadFileController.php` | Uploads / Storage |
-| `LocalizationController.php` + SetLocale | Multi-language |
-| `PaginationController.php` | `paginate()` |
-| `LayoutDemoController.php` | Layout + assets |
-| `database/migrations/*` | Schema changes |
-| `database/seeders/studentSeeder.php` | Seed one random student |
-| `database/seeders/DatabaseSeeder.php` | Calls studentSeeder + user factory |
-| `resources/views/migration/explain.blade.php` | Migration Q/A page |
+| File                                                   | Topic                              |
+| ------------------------------------------------------ | ---------------------------------- |
+| `httpController.php`                                   | HTTP client / API                  |
+| `DBQueryController.php`                                | Query Builder                      |
+| `ElqQueryBuilder.php` + `Student.php`                  | Eloquent CRUD                      |
+| `AccessorController.php` + `MutatorController.php`     | Accessors & mutators               |
+| `resources/views/accessor_mutator/index.blade.php`     | Accessors & mutators demo          |
+| `User.php` + `Profile.php` + `Subscription.php`        | One-to-one relations               |
+| `OnetoOneController.php`                               | One-to-one demos + create profile  |
+| `create_profiles_table` / `create_subscriptions_table` | FK + unique migrations             |
+| `AllrouteController.php`                               | HTTP methods                       |
+| `RequestMethodsController.php`                         | Request API                        |
+| `SessionsController.php`                               | Session & flash                    |
+| `UploadFileController.php`                             | Uploads / Storage                  |
+| `LocalizationController.php` + SetLocale               | Multi-language                     |
+| `PaginationController.php`                             | `paginate()`                       |
+| `LayoutDemoController.php`                             | Layout + assets                    |
+| `database/migrations/*`                                | Schema changes                     |
+| `database/seeders/studentSeeder.php`                   | Seed one random student            |
+| `database/seeders/DatabaseSeeder.php`                  | Calls studentSeeder + user factory |
+| `resources/views/migration/explain.blade.php`          | Migration Q/A page                 |
 
 ---
 
@@ -2265,23 +2265,23 @@ Topics are listed in the order they were added to this repo.
 
 ### 12–23. Advanced topics (after `db-start`) — see **Detailed Code Lessons** above
 
-| Branch | Tip | Topic |
-|--------|-----|-------|
-| `httpClient-api` | `81a381a` | HTTP Client & API |
-| `db-queryBuilder` | `2e31b24` | Database Query Builder |
-| `eloquent-queryBuilder` | `614bbd6` | Eloquent Query Builder (Student) |
-| `route-methods` | `32dbb5d` | All HTTP route methods |
-| `allRequestMethods` | `36c992e` | Request class methods |
-| `Sessions` | `ea87a34` | Session & flash |
-| `upload-files` | `10fb3a6` | File upload & Storage |
-| `localization` | `a0c2e70` | Localization |
-| `pagination` | `ffccd21` | Pagination |
-| `LayoutCssJs` | `99962c1` | Layout + CSS/JS |
-| `migrations` | `f0954fd` | Migrations create/alter/rollback |
-| *(main)* | `7a8909b` | Seeders — `studentSeeder` + `DatabaseSeeder` |
-| *(main)* | `859b4bf` | Maintenance Mode — `down` / `up` |
-| *(main)* | — | Accessors & Mutators — `/accessors` |
-| *(main)* | `cfb44db` / `f79c3c4` | One-to-One — User↔Profile, User↔Subscription |
+| Branch                  | Tip                   | Topic                                        |
+| ----------------------- | --------------------- | -------------------------------------------- |
+| `httpClient-api`        | `81a381a`             | HTTP Client & API                            |
+| `db-queryBuilder`       | `2e31b24`             | Database Query Builder                       |
+| `eloquent-queryBuilder` | `614bbd6`             | Eloquent Query Builder (Student)             |
+| `route-methods`         | `32dbb5d`             | All HTTP route methods                       |
+| `allRequestMethods`     | `36c992e`             | Request class methods                        |
+| `Sessions`              | `ea87a34`             | Session & flash                              |
+| `upload-files`          | `10fb3a6`             | File upload & Storage                        |
+| `localization`          | `a0c2e70`             | Localization                                 |
+| `pagination`            | `ffccd21`             | Pagination                                   |
+| `LayoutCssJs`           | `99962c1`             | Layout + CSS/JS                              |
+| `migrations`            | `f0954fd`             | Migrations create/alter/rollback             |
+| _(main)_                | `7a8909b`             | Seeders — `studentSeeder` + `DatabaseSeeder` |
+| _(main)_                | `859b4bf`             | Maintenance Mode — `down` / `up`             |
+| _(main)_                | —                     | Accessors & Mutators — `/accessors`          |
+| _(main)_                | `cfb44db` / `f79c3c4` | One-to-One — User↔Profile, User↔Subscription |
 
 ---
 
@@ -2493,3 +2493,22 @@ php artisan storage:link
 | `be7a2ee` | 2026-04-06 | Welcome Blade HTML                            |
 | `c078891` | 2026-04-04 | Early README update                           |
 | `f6abb0f` | 2026-04-04 | First commit                                  |
+
+Collection Methods
+map()
+
+filter()
+
+sort()
+
+pluck()
+
+groupBy()
+
+sum()
+
+each()
+
+contains()
+
+first()
