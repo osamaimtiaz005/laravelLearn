@@ -6,6 +6,7 @@ use App\Http\Controllers\AllrouteController;
 use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\ElqQueryBuilder;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\httpController;
 use App\Http\Controllers\RequestMethodsController;
 use App\Http\Controllers\SessionsController;
@@ -1176,5 +1177,33 @@ Route::prefix('many-to-many')->name('many-to-many.')->controller(ManyToManyContr
     Route::get('/pivot/{userId}/{roleId}', 'updatePivot')->name('pivot');
     Route::get('/where-pivot/{userId}', 'wherePivot')->name('where-pivot');
     Route::get('/teams', 'teams')->name('teams');
-    
+
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| EMAIL DEMO
+|--------------------------------------------------------------------------
+| Learning flow:
+|   1. GET  /email       → EmailController@index → form view (email.sendMail)
+|   2. POST /send-email  → EmailController@send  → validate → WelcomeMail → SMTP
+|   3. Email HTML body   → resources/views/email/index.blade.php
+|
+| Named routes:
+|   email.index → used by redirect()->route('email.index') and the form page URL
+|   email.send  → used by the form action="{{ route('email.send') }}"
+|
+| .env keys involved:
+|   MAIL_MAILER=smtp
+|   MAIL_HOST=smtp.gmail.com   (NOT 127.0.0.1 when using Gmail)
+|   MAIL_PORT=587
+|   MAIL_USERNAME / MAIL_PASSWORD (Gmail App Password)
+|   MAIL_FROM_ADDRESS / MAIL_FROM_NAME (fallback From if mailable omits from:)
+|
+| Related classes:
+|   App\Http\Controllers\EmailController
+|   App\Mail\WelcomeMail
+*/
+Route::get('/email', [EmailController::class, 'index'])->name('email.index');
+Route::post('/send-email', [EmailController::class, 'send'])->name('email.send');
