@@ -668,7 +668,7 @@ Components UI blocks very high modern
 A hands-on Laravel 12 learning repository. Each commit (and topic branch) adds a small, commented example so you can follow routing, Blade, controllers, forms, validation, middleware, and Eloquent step by step.
 
 **Stack:** PHP 8.2+, Laravel 12, Blade, MySQL/XAMPP-friendly local setup  
-**Current tip:** `main` → `f79c3c4` (one-to-one + subscription)
+**Current tip:** `main` → `d6b4372` (many-to-many User↔Role + User↔Team)
 
 ---
 
@@ -890,6 +890,13 @@ Short plain-English guide for every topic practiced in this repo.
 - **Flow:** migration → models → controller → `/one-to-one` routes
 - **Common mistakes:** FK on wrong table, `hasMany` instead of `hasOne`, missing `unique`/`$fillable`, create without user link, N+1, null crash
 - **Why:** Load related data as objects without writing SQL joins.
+
+### 16. Many-to-Many (`many-to-many`)
+
+- **What:** Both sides many — User ↔ Role, User ↔ Team via a **pivot** table.
+- **Key ideas:** `belongsToMany` both sides · pivot `role_user` / `team_user` · `attach` / `detach` / `sync` / `toggle` · `withPivot` · `wherePivot`
+- **Two-Way Test:** one user many roles **and** one role many users → many-to-many.
+- **Why:** Model links like “users have roles” without stuffing many IDs into one column.
 
 ### How topics connect (big picture)
 
@@ -2102,6 +2109,226 @@ $name = $profile->user->name;
 
 ---
 
+## Y. Many-to-Many Relations (`many-to-many`)
+
+**Explain:** Many-to-many means **both sides** can link to many of the other. Example: one User can have many Roles (Admin + Editor), and one Role (Admin) can belong to many Users. You cannot put a single foreign key on either table for this — you need a **pivot** (bridge) table like `role_user` that stores each link as a row.
+
+**Two-Way Test (how to know it is many-to-many):**
+
+1. Forward: Can one user have many roles? → **True**
+2. Backward: Can one role belong to many users? → **True**
+3. Both true → `belongsToMany` on **both** models + a pivot table.
+
+### Picture
+
+```
+users                 role_user (PIVOT)              roles
+id=1 Ali              user_id=1, role_id=1     →    Admin
+                      user_id=1, role_id=2     →    Editor
+id=2 Sara             user_id=2, role_id=1     →    Admin
+```
+
+Each pivot row = one link (“Ali is Admin”). Extra columns (`is_active`, `notes`) describe **that link**, not the user or role alone.
+
+Also in this project: **User ↔ Team** (`team_user`) — same idea, simpler (no extra pivot fields).
+
+### Flow — how to make many-to-many
+
+1. Create both main tables (`users`, `roles` / `teams`).
+2. Create **pivot migration** (`role_user` or `team_user`) with both FKs (+ optional extra columns).
+3. `php artisan migrate`
+4. On **both** models: `belongsToMany(Other::class)`.
+5. Optional: `->withPivot(...)` + `->withTimestamps()` if pivot has extra data.
+6. Use `attach` / `detach` / `sync` / `toggle` / `updateExistingPivot` in a controller.
+7. Eager load: `User::with('roles')->get()`.
+
+### Commands
+
+```bash
+php artisan make:model Role -m
+php artisan make:migration create_role_user_table
+# (or make:model Team -m + create_team_user_table)
+php artisan migrate
+php artisan make:controller ManyToManyController
+php artisan make:seeder RoleSeeder   # optional
+php artisan db:seed
+```
+
+### Pivot migration (important)
+
+```php
+Schema::create('role_user', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+    $table->boolean('is_active')->default(true);
+    $table->string('notes')->nullable();
+    $table->timestamps();
+
+    $table->unique(['user_id', 'role_id']); // no duplicate links
+});
+```
+
+**Naming rule:** Laravel’s default pivot name is alphabetical model names → `role_user` (not `user_role`).
+
+**Model vs migration:** `belongsToMany` in PHP only describes the link in code. The **migration** creates the real table that stores links.
+
+### Models (both sides)
+
+```php
+// User.php
+public function roles()
+{
+    return $this->belongsToMany(Role::class)
+        ->withPivot('is_active', 'notes')  // read extra pivot columns
+        ->withTimestamps();               // fill pivot created_at / updated_at
+}
+
+public function teams()
+{
+    return $this->belongsToMany(Team::class);
+}
+
+// Role.php
+public function users()
+{
+    return $this->belongsToMany(User::class)
+        ->withPivot('is_active', 'notes')
+        ->withTimestamps();
+}
+
+// Team.php
+public function users()
+{
+    return $this->belongsToMany(User::class);
+}
+
+// Full form if names are non-default:
+// belongsToMany(Role::class, 'role_user', 'user_id', 'role_id')
+```
+
+### Methods cheatsheet (practice these)
+
+| Method | Meaning | Pivot effect |
+|--------|---------|--------------|
+| `$user->roles` | Collection of related roles | reads via pivot |
+| `$user->roles()` | Relationship query | for write methods below |
+| `attach($id)` | Add one link | INSERT pivot row |
+| `attach($id, ['notes' => 'vip'])` | Add link + pivot data | INSERT with extras |
+| `detach($id)` | Remove one link | DELETE that pivot row |
+| `detach()` | Remove **all** links | DELETE all pivot rows for user |
+| `sync([1, 2])` | Exact set only | add missing, **remove others** |
+| `syncWithoutDetaching([3])` | Add without removing | INSERT if missing; keep rest |
+| `toggle([1, 2])` | Flip membership | add if absent / remove if present |
+| `updateExistingPivot($id, [...])` | Change link data | UPDATE pivot columns |
+| `wherePivot('is_active', true)` | Filter by pivot column | WHERE on pivot |
+| `with('roles')` | Eager load | avoid N+1 |
+| `withCount('roles')` | Add `roles_count` | COUNT via pivot |
+| `$role->pivot->notes` | Extra field on that link | requires `withPivot` |
+
+```php
+// Examples used in ManyToManyController
+$user->roles()->attach($roleId, ['is_active' => true, 'notes' => 'vip']);
+$user->roles()->syncWithoutDetaching([$roleId => ['is_active' => true]]);
+$user->roles()->detach($roleId);
+$user->roles()->sync([1, 2]);           // only these roles remain
+$user->roles()->toggle([$roleId]);
+$user->roles()->updateExistingPivot($roleId, ['is_active' => false]);
+$user->roles()->wherePivot('is_active', true)->get();
+
+User::with('roles')->withCount('roles')->get();
+$role->pivot->is_active;                // after withPivot + loaded relation
+```
+
+**`attach` vs `sync` vs `syncWithoutDetaching`**
+
+- **attach** — only adds (can error if unique pair already exists).
+- **sync** — user’s roles become **exactly** the given IDs (drops extras).
+- **syncWithoutDetaching** — add missing IDs, **never** remove existing (safer for demos you click twice).
+
+### Routes in this project
+
+| URL | What it teaches |
+|-----|-----------------|
+| `/many-to-many` | Blade overview: users↔roles |
+| `/many-to-many/users` | JSON forward: users + roles |
+| `/many-to-many/roles` | JSON backward: roles + users |
+| `/many-to-many/user/{id}` | One user + many roles + pivot example |
+| `/many-to-many/role/{id}` | One role + many users |
+| `/many-to-many/attach/{userId}/{roleId}` | Add link (keeps others) |
+| `/many-to-many/detach/{userId}/{roleId}` | Remove one link |
+| `/many-to-many/sync/{userId}/{roleIds}` | Exact set, e.g. `1/1,2` |
+| `/many-to-many/toggle/{userId}/{roleId}` | Flip link on/off |
+| `/many-to-many/pivot/{userId}/{roleId}` | `updateExistingPivot` |
+| `/many-to-many/where-pivot/{userId}` | Filter by pivot column |
+| `/many-to-many/teams` | User ↔ Team many-to-many |
+
+### Common mistakes
+
+1. **Using `hasMany` / `belongsTo` instead of `belongsToMany`**  
+   Those are for one-to-many. Many-to-many needs a pivot + `belongsToMany` on **both** sides.
+
+2. **Forgetting the pivot table**  
+   Relation methods alone do not create tables. Migration must create `role_user`.
+
+3. **Wrong pivot table name**  
+   Default is alphabetical: `role_user`. If you named it `user_roles`, pass the name into `belongsToMany`.
+
+4. **Defining relation on only one model**  
+   You can query one way, but the other side (`$role->users`) needs `Role::users()` too.
+
+5. **Missing `withPivot` but reading `$role->pivot->notes`**  
+   Extra columns are invisible until you list them in `withPivot(...)`.
+
+6. **Missing `withTimestamps` but pivot has `timestamps()`**  
+   Pivot `created_at` / `updated_at` stay null unless `->withTimestamps()`.
+
+7. **`sync` when you meant `attach`**  
+   `sync([2])` **removes** every other role. Use `attach` / `syncWithoutDetaching` to only add.
+
+8. **Calling `attach` twice on a unique pair**  
+   Duplicate `(user_id, role_id)` fails unique constraint. Prefer `syncWithoutDetaching` or check first.
+
+9. **`$user->roles` vs `$user->roles()`**  
+   Property = Collection (read). Method with `()` = query (for attach/detach/sync).
+
+10. **N+1 queries**  
+    Loop users and hit `$user->roles` without `User::with('roles')`.
+
+11. **Putting FK only on `users` or only on `roles`**  
+    That designs one-to-many, not many-to-many.
+
+12. **Forgetting unique on pivot**  
+    Without `unique(['user_id','role_id'])`, the same user can get the same role twice.
+
+### Q/A
+
+- **Q: What is a pivot?**  
+  A: The middle table that stores each User–Role (or User–Team) link as a row.
+- **Q: Why not put `role_id` on users?**  
+  A: Then one user could have only one role (or you’d need messy multi-value columns). Pivot allows many links cleanly.
+- **Q: Why both models use `belongsToMany`?**  
+  A: The relationship is symmetric — both sides are “many”.
+- **Q: `attach` vs `sync`?**  
+  A: `attach` adds. `sync` replaces the whole set.
+- **Q: When use `syncWithoutDetaching`?**  
+  A: When adding links without risking removal of existing ones (and safer than re-attach).
+- **Q: How do I store “VIP note” on the link?**  
+  A: Extra pivot columns + `withPivot` + `attach($id, ['notes' => 'vip'])` or `updateExistingPivot`.
+- **Q: How do I read pivot data?**  
+  A: After loading roles: `$role->pivot->is_active` / `$role->pivot->notes`.
+- **Q: User–Team vs User–Role?**  
+  A: Same pattern. Role pivot has extras (`is_active`, `notes`); Team pivot is a simple link table.
+- **Q: 1-1 vs 1-many vs many-many?**  
+  A: 1-1 = `hasOne`/`belongsTo` + unique FK. 1-many = `hasMany`/`belongsTo`. Many-many = `belongsToMany` + pivot.
+
+**Files:** `User.php` · `Role.php` · `Team.php` · `ManyToManyController.php` · `role_user` / `team_user` migrations  
+**Commits:** `5851fb6` (User↔Role) · `d6b4372` (User↔Team)
+
+**Try:** `/many-to-many` · `/many-to-many/attach/1/2` · `/many-to-many/sync/1/1,2` · `/many-to-many/teams`
+
+---
+
 ## New Routes Quick List
 
 | Area                 | Example URLs                                             |
@@ -2119,6 +2346,7 @@ $name = $profile->user->name;
 | Migrations           | `/migration`                                             |
 | Accessors & Mutators | `/accessors` (form POST `/save`)                         |
 | One-to-One           | `/one-to-one`, `/users`, `/create/{id}`, `/subscription` |
+| Many-to-Many         | `/many-to-many`, attach/detach/sync/toggle, `/teams`   |
 
 ---
 
@@ -2134,6 +2362,9 @@ $name = $profile->user->name;
 | `User.php` + `Profile.php` + `Subscription.php`        | One-to-one relations               |
 | `OnetoOneController.php`                               | One-to-one demos + create profile  |
 | `create_profiles_table` / `create_subscriptions_table` | FK + unique migrations             |
+| `Role.php` + `Team.php` + `User::roles()` / `teams()`  | Many-to-many models                |
+| `ManyToManyController.php`                             | attach / detach / sync / toggle    |
+| `role_user` / `team_user` migrations                   | Pivot tables                       |
 | `AllrouteController.php`                               | HTTP methods                       |
 | `RequestMethodsController.php`                         | Request API                        |
 | `SessionsController.php`                               | Session & flash                    |
@@ -2282,6 +2513,7 @@ Topics are listed in the order they were added to this repo.
 | _(main)_                | `859b4bf`             | Maintenance Mode — `down` / `up`             |
 | _(main)_                | —                     | Accessors & Mutators — `/accessors`          |
 | _(main)_                | `cfb44db` / `f79c3c4` | One-to-One — User↔Profile, User↔Subscription |
+| _(main)_                | `5851fb6` / `d6b4372` | Many-to-Many — User↔Role, User↔Team          |
 
 ---
 
