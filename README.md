@@ -668,7 +668,7 @@ Components UI blocks very high modern
 A hands-on Laravel 12 learning repository. Each commit (and topic branch) adds a small, commented example so you can follow routing, Blade, controllers, forms, validation, middleware, and Eloquent step by step.
 
 **Stack:** PHP 8.2+, Laravel 12, Blade, MySQL/XAMPP-friendly local setup  
-**Current tip:** `main` → `d6b4372` (many-to-many User↔Role + User↔Team)
+**Current tip:** `main` → `06bbbe0` (Mail / WelcomeMail)
 
 ---
 
@@ -897,6 +897,12 @@ Short plain-English guide for every topic practiced in this repo.
 - **Key ideas:** `belongsToMany` both sides · pivot `role_user` / `team_user` · `attach` / `detach` / `sync` / `toggle` · `withPivot` · `wherePivot`
 - **Two-Way Test:** one user many roles **and** one role many users → many-to-many.
 - **Why:** Model links like “users have roles” without stuffing many IDs into one column.
+
+### 17. Mail / Email (`email`)
+
+- **What:** Send email with a **Mailable** (`WelcomeMail`) + `Mail::to()->send()`.
+- **Key ideas:** `.env` `MAIL_*` · `envelope()` / `content()` / `attachments()` · form at `/email` · Gmail App Password · optional queue
+- **Why:** Contact forms, welcome messages, password resets — real apps need outbound email.
 
 ### How topics connect (big picture)
 
@@ -2329,6 +2335,210 @@ $role->pivot->is_active;                // after withPivot + loaded relation
 
 ---
 
+## Z. Mail / Email (`email`)
+
+**Explain:** Laravel Mail lets your app send emails through SMTP (Gmail, Mailtrap, etc.). You usually create a **Mailable** class (`WelcomeMail`) that describes one email (from, subject, Blade body, attachments). A controller builds that mailable and sends it with the **Mail** facade: `Mail::to($email)->send(new WelcomeMail(...))`. Real delivery settings live in `.env` (`MAIL_*`).
+
+### Flow (how it works)
+
+```
+Browser form (GET /email)
+    → POST /send-email
+    → EmailController@send validates input
+    → Mail::to($to)->send(new WelcomeMail(...))
+    → WelcomeMail::envelope()  (From + subject)
+    → WelcomeMail::content()   (Blade HTML body)
+    → WelcomeMail::attachments()
+    → SMTP server (MAIL_HOST / MAIL_USERNAME / MAIL_PASSWORD)
+    → Inbox
+```
+
+### Commands
+
+```bash
+php artisan make:mail WelcomeMail
+# creates app/Mail/WelcomeMail.php
+
+php artisan make:mail WelcomeMail --markdown=email.markdown-welcome
+# optional: Markdown mail template
+
+# If you queue mail (ShouldQueue or Mail::queue):
+php artisan queue:work
+```
+
+### `.env` setup (Gmail example)
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your@gmail.com
+MAIL_PASSWORD=your-app-password   # Gmail App Password, NOT normal password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="your@gmail.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+**Learning tip:** Use `MAIL_MAILER=log` to write emails to `storage/logs/laravel.log` without real SMTP.
+
+### Controller (`EmailController`)
+
+```php
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMail;
+
+public function index()
+{
+    return view('email.sendMail');   // form
+}
+
+public function send(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'subject' => 'required|string|max:255',
+        'to' => 'required|email|max:255',
+        'from' => 'required|email|max:255',
+        'body' => 'required|string|max:5000',
+    ]);
+
+    try {
+        Mail::to($request->to)->send(
+            new WelcomeMail(
+                $request->name,
+                $request->to,
+                $request->subject,
+                $request->from,
+                $request->body
+            )
+        );
+        return redirect()->route('email.index')->with('success', 'Email sent successfully');
+    } catch (\Throwable $e) {
+        return redirect()->route('email.index')->with('error', 'Failed: '.$e->getMessage());
+    }
+}
+```
+
+### Mailable (`WelcomeMail`) — modern Laravel style
+
+```php
+class WelcomeMail extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    // Do NOT name props $from / $to / $subject — they conflict with Mailable internals
+    public string $name;
+    public string $recipient;
+    public string $mailSubject;
+    public string $sender;
+    public string $body;
+
+    public function __construct($name, $to, $subject, $from, $body) { ... }
+
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            from: new Address($this->sender, $this->name),
+            subject: $this->mailSubject,
+            // replyTo / cc / bcc also available
+        );
+    }
+
+    public function content(): Content
+    {
+        return new Content(
+            view: 'email.index',   // resources/views/email/index.blade.php
+            with: [
+                'name' => $this->name,
+                'subject' => $this->mailSubject,
+                'to' => $this->recipient,
+                'email' => $this->sender,
+                'body' => $this->body,
+            ],
+        );
+    }
+
+    public function attachments(): array
+    {
+        return [
+            // Attachment::fromPath(...)->as('file.pdf')->withMime('application/pdf'),
+        ];
+    }
+}
+```
+
+### Mail facade methods
+
+| Method | Meaning |
+|--------|---------|
+| `Mail::to($email)->send($mailable)` | Send now (blocking) |
+| `Mail::to($email)->queue($mailable)` | Push to queue (needs `queue:work`) |
+| `Mail::to($email)->later($when, $mailable)` | Send later via queue |
+| `Mail::to()->cc()->bcc()->send(...)` | Extra recipients |
+| `Mail::raw('text', fn ($m) => ...)` | Quick plain text, no Mailable |
+| `Mail::html('<h1>Hi</h1>', fn ($m) => ...)` | Quick HTML string |
+| `Mail::mailer('smtp')->to(...)->send(...)` | Force a mailer from `config/mail.php` |
+| `Mail::fake()` (tests) | Don’t send; assert with `Mail::assertSent()` |
+
+### Optional: queue the mailable
+
+```php
+class WelcomeMail extends Mailable implements ShouldQueue
+{
+    // then Mail::to()->send() becomes async
+}
+// or without implementing ShouldQueue:
+Mail::to($to)->queue(new WelcomeMail(...));
+```
+
+Requires `QUEUE_CONNECTION=database` (or redis) and `php artisan queue:work`.
+
+### Routes in this project
+
+| URL | Method | Purpose |
+|-----|--------|---------|
+| `/email` | GET | Show send form |
+| `/send-email` | POST | Validate + send `WelcomeMail` |
+
+### Common mistakes
+
+1. **Wrong view path** — `view: 'index'` looks for `views/index.blade.php`. Use `email.index`.
+2. **Naming props `$from` / `$to` / `$subject`** — conflicts with Mailable internals; use `$sender`, `$recipient`, `$mailSubject`.
+3. **Gmail rejects From** — From address must match `MAIL_USERNAME` (or a verified alias). Use App Password, not your normal Gmail password.
+4. **Missing `@csrf` on form** — 419 Page Expired.
+5. **`MAIL_MAILER=log` but expecting inbox** — mail only goes to the log file.
+6. **Queue without worker** — `queue()` / `ShouldQueue` emails sit forever until `queue:work`.
+7. **No try/catch while learning** — SMTP errors become opaque 500s; this project flashes `$e->getMessage()`.
+8. **Body `max:255`** — too short for real messages (this demo allows 5000).
+9. **Forgetting `old()` on form** — validation failure clears fields.
+10. **Attachments path wrong** — use `public_path(...)` / `storage_path(...)` / `Attachment::fromStorage(...)`.
+
+### Q/A
+
+- **Q: What is a Mailable?**  
+  A: A class that describes one email (headers + body + attachments).
+- **Q: Mail facade vs Mailable?**  
+  A: Facade = how you send (`to`/`send`/`queue`). Mailable = what you send.
+- **Q: Where is SMTP configured?**  
+  A: `.env` `MAIL_*` keys → `config/mail.php`.
+- **Q: envelope vs content?**  
+  A: `envelope` = From/subject (and cc/bcc/replyTo). `content` = Blade/HTML body.
+- **Q: Why rename `$subject` to `$mailSubject`?**  
+  A: `$subject` is reserved inside Mailable; overwriting it breaks headers.
+- **Q: send vs queue?**  
+  A: `send` waits for SMTP. `queue` returns fast and a worker sends later.
+- **Q: How do I test without sending real mail?**  
+  A: `MAIL_MAILER=log` or `Mail::fake()` in tests.
+- **Q: Can I attach files?**  
+  A: Yes — return `Attachment::fromPath(...)` (etc.) from `attachments()`.
+
+**Files:** `EmailController.php` · `WelcomeMail.php` · `email/sendMail.blade.php` · `email/index.blade.php` · `.env` `MAIL_*`  
+**Commit:** `06bbbe0`
+
+**Try:** `/email` → fill form → submit → check inbox (or `storage/logs` if `MAIL_MAILER=log`)
+
+---
+
 ## New Routes Quick List
 
 | Area                 | Example URLs                                             |
@@ -2347,6 +2557,7 @@ $role->pivot->is_active;                // after withPivot + loaded relation
 | Accessors & Mutators | `/accessors` (form POST `/save`)                         |
 | One-to-One           | `/one-to-one`, `/users`, `/create/{id}`, `/subscription` |
 | Many-to-Many         | `/many-to-many`, attach/detach/sync/toggle, `/teams`   |
+| Mail / Email         | `/email` (form) · POST `/send-email`                   |
 
 ---
 
@@ -2365,6 +2576,9 @@ $role->pivot->is_active;                // after withPivot + loaded relation
 | `Role.php` + `Team.php` + `User::roles()` / `teams()`  | Many-to-many models                |
 | `ManyToManyController.php`                             | attach / detach / sync / toggle    |
 | `role_user` / `team_user` migrations                   | Pivot tables                       |
+| `EmailController.php` + `WelcomeMail.php`              | Send mail demo                     |
+| `resources/views/email/sendMail.blade.php`             | Email compose form                 |
+| `resources/views/email/index.blade.php`                | Email HTML body                    |
 | `AllrouteController.php`                               | HTTP methods                       |
 | `RequestMethodsController.php`                         | Request API                        |
 | `SessionsController.php`                               | Session & flash                    |
@@ -2514,6 +2728,7 @@ Topics are listed in the order they were added to this repo.
 | _(main)_                | —                     | Accessors & Mutators — `/accessors`          |
 | _(main)_                | `cfb44db` / `f79c3c4` | One-to-One — User↔Profile, User↔Subscription |
 | _(main)_                | `5851fb6` / `d6b4372` | Many-to-Many — User↔Role, User↔Team          |
+| _(main)_                | `06bbbe0`             | Mail — `WelcomeMail` + `/email`              |
 
 ---
 
@@ -2658,6 +2873,8 @@ php artisan make:seeder studentSeeder
 php artisan db:seed
 php artisan db:seed --class=studentSeeder
 php artisan migrate:fresh --seed
+php artisan make:mail WelcomeMail
+php artisan queue:work
 php artisan down
 php artisan down --secret="my-key" --refresh=30 --retry=60
 php artisan down --with-secret
