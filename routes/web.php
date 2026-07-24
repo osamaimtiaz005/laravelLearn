@@ -7,6 +7,7 @@ use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\ElqQueryBuilder;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\FluentStringController;
 use App\Http\Controllers\httpController;
 use App\Http\Controllers\RequestMethodsController;
 use App\Http\Controllers\SessionsController;
@@ -1207,3 +1208,16 @@ Route::prefix('many-to-many')->name('many-to-many.')->controller(ManyToManyContr
 */
 Route::get('/email', [EmailController::class, 'index'])->name('email.index');
 Route::post('/send-email', [EmailController::class, 'send'])->name('email.send');
+
+/*
+|--------------------------------------------------------------------------
+| FLUENT STRINGS DEMO
+|--------------------------------------------------------------------------
+| Learning flow:
+|   GET /fluent-string → FluentStringController@index
+|                      → shows Str::of() / str() chain examples in Blade
+|
+| Why: replace nested PHP string functions with readable left→right chains.
+| Class: Illuminate\Support\Stringable (returned by Str::of() and str())
+*/
+Route::get('/fluent-string', [FluentStringController::class, 'index'])->name('fluent-string.index');
