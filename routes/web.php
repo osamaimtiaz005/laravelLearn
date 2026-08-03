@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
 use App\Http\Controllers\AccessorController;
@@ -20,6 +20,7 @@ use App\Http\Controllers\ManyToOneController;
 use App\Http\Controllers\OnetoManyController;
 use App\Http\Controllers\OnetoOneController;
 use App\Http\Controllers\PaginationController;
+use App\Http\Controllers\RouteModelBindingController;
 use App\Http\Controllers\UploadFileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\User_dbController;
@@ -1221,3 +1222,65 @@ Route::post('/send-email', [EmailController::class, 'send'])->name('email.send')
 | Class: Illuminate\Support\Stringable (returned by Str::of() and str())
 */
 Route::get('/fluent-string', [FluentStringController::class, 'index'])->name('fluent-string.index');
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTE MODEL BINDING — beginner demos
+|--------------------------------------------------------------------------
+| WHAT: URL piece → Eloquent model injected into the controller.
+|
+| Hub:  GET /rmb
+|
+| Types:
+|   1) Implicit  — type-hint User $user (Laravel finds the row)
+|   2) Explicit  — Route::bind(...) in AppServiceProvider (custom finder)
+|
+| Extras shown below:
+|   - {user:name}                    = bind by that column
+|   - ->scopeBindings()              = child must belong to parent
+|   - ->missing()                    = custom "not found" action
+|   - Soft deletes / getRouteKeyName = comments on User model
+*/
+
+Route::get('/user-route-model-binding/{user:name}', [RouteModelBindingController::class, 'show'])
+    ->name('user.show');
+Route::get('/user-route-model-binding-inline/{user:name}', [RouteModelBindingController::class, 'showInline'])
+    ->name('user.show.inline');
+
+/*
+|--------------------------------------------------------------------------
+| Complete Route Model Binding examples
+|--------------------------------------------------------------------------
+| Open /rmb first. These routes keep the original examples above unchanged.
+*/
+
+// Explanation page with links built from users that exist in the database.
+Route::get('/rmb', [RouteModelBindingController::class, 'index'])
+    ->name('rmb.index');
+
+// IMPLICIT: {user} + User $user. Uses users.id by default.
+Route::get('/rmb/implicit/{user}', [RouteModelBindingController::class, 'showImplicit'])
+    ->name('rmb.implicit');
+
+// CUSTOM KEY: :name tells Laravel to use users.name instead of users.id.
+// The selected custom-key column should normally be unique.
+Route::get('/rmb/custom/{user:name}', [RouteModelBindingController::class, 'show'])
+    ->name('rmb.custom');
+
+// EXPLICIT: {explicitUser} is registered with Route::model() in AppServiceProvider.
+Route::get('/rmb/explicit/{explicitUser}', [RouteModelBindingController::class, 'showExplicit'])
+    ->name('rmb.explicit');
+
+// Extra model methods: getRouteKeyName(), getRouteKey(), etc.
+Route::get('/rmb/details/{user}', [RouteModelBindingController::class, 'bindingDetails'])
+    ->name('rmb.details');
+
+// CUSTOM MISSING RESPONSE: without ->missing(), Laravel returns its normal 404 page.
+Route::get('/rmb/missing/{user}', [RouteModelBindingController::class, 'showImplicit'])
+    ->missing(function (Request $request) {
+        return redirect()
+            ->route('rmb.index')
+            ->with('error', 'That user was not found. The route missing() callback handled the 404.');
+    })
+    ->name('rmb.missing');

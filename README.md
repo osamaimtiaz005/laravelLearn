@@ -918,6 +918,14 @@ Short plain-English guide for every topic practiced in this repo.
 - **Why:** Cleaner slugs, emails, filenames, masks, and conditionals without temp variables.
 - **Demo:** `GET /fluent-string`
 
+### 19. Route Model Binding (`user-route-model-binding`)
+
+- **What:** Laravel turns a URL value into an Eloquent model and injects it into the controller.
+- **Key ideas:** `User $user` type-hint · `{user}` matches `$user` · default = find by `id` · `{user:name}` = find by `name` · missing → **404**
+- **Problem it solves:** No manual `User::findOrFail($id)` in every show/edit method.
+- **Why:** Less boilerplate, consistent 404, safer (you always get a real model or fail).
+- **Demo:** `GET /user-route-model-binding/{user:name}`
+
 ### How topics connect (big picture)
 
 ```
@@ -2701,6 +2709,79 @@ php artisan serve
 
 ---
 
+## AB. Route Model Binding
+
+**Explain:** Route Model Binding = Laravel reads `{user}` from the URL, loads that row from the DB, and passes a full `User` model into your method. You type-hint `User $user` instead of writing `findOrFail` yourself.
+
+### Problem it solves
+
+```php
+// WITHOUT binding — you look up manually
+public function show($id) {
+    $user = User::findOrFail($id);
+    return $user;
+}
+
+// WITH binding — Laravel looks up for you
+public function show(User $user) {
+    return $user; // already loaded (or 404)
+}
+```
+
+### How it works (this project)
+
+| Piece | Meaning |
+| ----- | ------- |
+| Route `{user}` | URL parameter name |
+| Controller `User $user` | Same name + model type-hint → Laravel binds |
+| Default | Find by primary key (`id`) |
+| `{user:name}` (used here) | **Custom key** — find where `users.name = URL value` |
+| Not found | Automatic **404** |
+
+**Your route:**
+```php
+Route::get('/user-route-model-binding/{user:name}', [RouteModelBindingController::class, 'show']);
+```
+
+**Your controller:**
+```php
+public function show(User $user) { ... }
+```
+
+Example: `/user-route-model-binding/Ali` → `User` where `name = 'Ali'`.
+
+### Implicit vs explicit
+
+| Type | How | When |
+| ---- | --- | ---- |
+| **Implicit** (common) | Type-hint model in controller / closure | Almost always — used in this demo |
+| **Explicit** | `Route::model('user', User::class)` in a provider | Rare / legacy |
+
+### Useful extras (optional)
+
+| Feature | Idea |
+| ------- | ---- |
+| `{user:slug}` or `{user:email}` | Bind by that column once |
+| `getRouteKeyName()` on model | Always use that column (e.g. `slug`) for this model |
+| Scoped binding | Child must belong to parent (`/users/{user}/posts/{post}`) |
+| Soft deletes | Deleted rows still 404 unless you customize resolution |
+
+### Q/A
+
+- **Q: Why must `$user` match `{user}`?**  
+  A: Laravel matches the **parameter name**. `{user}` + `$user` → bind. `{user}` + `$id` → no automatic model.
+- **Q: `{user}` vs `{user:name}`?**  
+  A: `{user}` = by `id`. `{user:name}` = by `name` column.
+- **Q: What if the name does not exist?**  
+  A: Laravel returns **404** (same idea as `findOrFail`).
+- **Q: Is this only for User?**  
+  A: No — any Eloquent model: `Post $post`, `Student $student`, etc.
+
+**Files:** `RouteModelBindingController.php` · route in `web.php`  
+**Try:** `/user-route-model-binding/EXISTING_USER_NAME` (use a real `users.name` from your DB)
+
+---
+
 ## New Routes Quick List
 
 | Area                 | Example URLs                                             |
@@ -2721,6 +2802,7 @@ php artisan serve
 | Many-to-Many         | `/many-to-many`, attach/detach/sync/toggle, `/teams`   |
 | Mail / Email         | `/email` (form) · POST `/send-email`                   |
 | Fluent Strings       | `/fluent-string`                                       |
+| Route Model Binding  | `/user-route-model-binding/{user:name}`                |
 
 ---
 
@@ -2744,6 +2826,7 @@ php artisan serve
 | `resources/views/email/index.blade.php`                | Email HTML body                    |
 | `FluentStringController.php`                           | Fluent Strings / Stringable demo   |
 | `resources/views/fluent_string/index.blade.php`        | Fluent string method results UI    |
+| `RouteModelBindingController.php`                      | Implicit route model binding       |
 | `AllrouteController.php`                               | HTTP methods                       |
 | `RequestMethodsController.php`                         | Request API                        |
 | `SessionsController.php`                               | Session & flash                    |

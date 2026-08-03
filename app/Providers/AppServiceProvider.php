@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Rules\ageLimit;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +23,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Explicit Route Model Binding
+        |--------------------------------------------------------------------------
+        | Whenever a route has {explicitUser}, Laravel resolves it to a User.
+        | Route::model() uses the model's route key (id by default).
+        |
+        | Example:
+        |   /rmb/explicit/5 → User::where('id', 5)->firstOrFail()
+        |
+        | Missing record → Laravel automatically returns 404.
+        */
+        Route::model('explicitUser', User::class);
+
         /*
         |--------------------------------------------------------------------------
         | Custom Validation Rule — Service Provider (Approach 2)
