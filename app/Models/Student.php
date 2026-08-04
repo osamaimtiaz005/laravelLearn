@@ -58,6 +58,12 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder|Student query()
  * @method static Builder|Student where(mixed $column, mixed $operator = null, mixed $value = null, string $boolean = 'and')
  * @method static Student create(array $attributes = [])
+ *
+ * @property string $name
+ * @property string $email
+ * @property string $batch
+ *
+ * @property-read int $id
  */
 class Student extends Model
 {

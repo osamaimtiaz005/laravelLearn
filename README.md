@@ -926,16 +926,26 @@ Short plain-English guide for every topic practiced in this repo.
 - **Why:** Less boilerplate, consistent 404, safer (you always get a real model or fail).
 - **Demo:** `GET /user-route-model-binding/{user:name}`
 
+### 20. Building an API in the same project (`api-learning`)
+
+- **What:** Your Laravel app can **provide** JSON APIs (`routes/api.php`) alongside Blade pages (`routes/web.php`).
+- **Key ideas:** `/api` prefix · `response()->json()` · REST verbs · route model binding on APIs · `update()` vs `save()` vs `DB::` · JSON 404s · Postman body gotchas · Sanctum ready
+- **Problem it solves:** Mobile apps / Postman / SPAs need data, not HTML.
+- **Why:** One codebase — shared models, validation, DB — two clients (browser + API).
+- **Not the same as:** `httpController` which *calls* an external API with `Http::get`.
+- **Demo hub:** `GET /api-learning`
+- **Try:** `/api/hello` · `/api/users` · `/api/students` · `PUT /api/students/{student}`
+
 ### How topics connect (big picture)
 
 ```
 URL request
-  → Route (match URL + method)
-  → Middleware (optional checks)
+  → Route (web.php HTML  OR  api.php JSON)
+  → Middleware (web session/CSRF  OR  api throttle)
   → Controller (logic)
-  → Validation (if form)
+  → Validation (if input)
   → Model / Database (if data)
-  → Blade view (HTML response)
+  → Blade view  OR  response()->json(...)
 ```
 
 ---
@@ -2782,6 +2792,314 @@ Example: `/user-route-model-binding/Ali` → `User` where `name = 'Ali'`.
 
 ---
 
+## AC. Building an API (same project) — full lesson
+
+**Explain:** An API endpoint returns **JSON data** for clients (Postman, mobile, React). Blade routes return **HTML** for browsers. Both live in **one** Laravel app and share the same models/database.
+
+**Hub page:** `/api-learning` (HTML guide)  
+**API file:** `routes/api.php` (all URLs get `/api` prefix automatically)  
+**Controller:** `ApiLearningController.php`
+
+---
+
+### 1. Web vs API (same project)
+
+| | Web | API |
+| - | --- | --- |
+| File | `routes/web.php` | `routes/api.php` |
+| URL examples | `/rmb`, `/email`, `/api-learning` | `/api/hello`, `/api/users`, `/api/students` |
+| Return | `view(...)` → HTML | `response()->json(...)` → JSON |
+| CSRF / session | Yes (forms, login) | Usually no (stateless) |
+| Clients | Browser pages | Postman, mobile app, SPA, other servers |
+
+```php
+// Web
+return view('users.index', compact('users'));
+
+// API
+return response()->json(['data' => $users]);
+```
+
+**Different from `httpController`:**  
+`Http::get('https://...')` = your app **calls** an external API.  
+`routes/api.php` = your app **is** the API others call.
+
+---
+
+### 2. How it is wired
+
+```php
+// bootstrap/app.php
+->withRouting(
+    web: __DIR__.'/../routes/web.php',
+    api: __DIR__.'/../routes/api.php', // enables /api/*
+);
+
+// Force JSON errors for every /api/* URL (even if Postman sends Accept: */*)
+$exceptions->shouldRenderJsonWhen(function ($request, \Throwable $e) {
+    return $request->is('api/*') || $request->expectsJson();
+});
+```
+
+```php
+// routes/api.php
+Route::get('/hello', [ApiLearningController::class, 'hello']);
+// Full URL → /api/hello
+```
+
+---
+
+### 3. All learning endpoints (this project)
+
+#### Users (CRUD)
+
+| Method | URL | Action |
+| ------ | --- | ------ |
+| GET | `/api/hello` | Simple JSON health check |
+| GET | `/api/users` | List users |
+| GET | `/api/users/{user}` | Show one (route model binding) |
+| POST | `/api/users` | Create → **201** |
+| PUT/PATCH | `/api/users/{user}` | Update |
+| DELETE | `/api/users/{user}` | Delete |
+| GET | `/api/status/{code}` | Demo status codes |
+| POST | `/api/validate-demo` | See **422** validation JSON |
+| POST | `/api/echo` | Echo request details |
+
+#### Students
+
+| Method | URL | Action |
+| ------ | --- | ------ |
+| GET | `/api/students` | List students |
+| POST | `/api/add-student` | Create student |
+| PUT/PATCH | `/api/students/{student}` | Update (binding + `update()`) |
+| DELETE | `/api/delete-student/{id}` | Delete (manual `find` — contrast) |
+
+---
+
+### 4. Route Model Binding on APIs — yes, use it
+
+Binding is **not** HTML-only. It only loads the model (or 404).
+
+```php
+// routes/api.php
+Route::put('/students/{student}', [ApiLearningController::class, 'updateStudent']);
+
+// controller — $student is already loaded (or Laravel already returned 404)
+public function updateStudent(Request $request, Student $student)
+{
+    // ❌ do NOT find again:
+    // $student = Student::find($student->id);
+
+    $student->update($validated);
+}
+```
+
+| Style | When |
+| ----- | ---- |
+| `Student $student` + `{student}` | Preferred — auto load + auto 404 |
+| `Student::findOrFail($id)` | When route param is plain `{id}` with no model type-hint |
+
+**404 JSON vs HTML (important):**
+
+| Accept header | Default 404 shape |
+| ------------- | ----------------- |
+| `application/json` | JSON |
+| Postman default `*/*` | Can be HTML error page |
+
+This project forces JSON for `/api/*` in `bootstrap/app.php` (`shouldRenderJsonWhen`), so missing students return JSON even without the Accept header.
+
+Example missing student:
+
+```json
+{
+  "message": "No query results for model [App\\Models\\Student] 999999999"
+}
+```
+
+---
+
+### 5. `update()` vs `save()` vs `DB::table()`
+
+All three can change a row. Prefer **Eloquent** for normal Student/User CRUD.
+
+| Method | What it does | When |
+| ------ | ------------ | ---- |
+| `$student->update($validated)` | `fill()` + `save()` in one call; uses `$fillable`; runs mutators | **Best for API/form updates** (what we use) |
+| `$student->save()` | Writes current model attributes to DB | After changing one/few fields in code |
+| `DB::table('students')->update(...)` | Query Builder — no model layer | Complex joins/reports; skips mutators/events/`$fillable` |
+
+```php
+// Eloquent update() — recommended here
+$student->update($validated);
+
+// Eloquent save() — same result, more lines
+$student->fill($validated);
+$student->save();
+
+// Property + save() (IDE may warn if accessors exist)
+$student->batch = 2026;
+$student->save();
+
+// Query Builder — bypasses Student mutators / $fillable
+DB::table('students')->where('id', $student->id)->update($validated);
+```
+
+**Accessors note:** `Student` has `getNameAttribute()` → response shows name **UPPERCASE** (display only). Mutator `setNameAttribute()` still runs on write via `update()` / `create()`.
+
+---
+
+### 6. Validation rules that bit us while learning
+
+#### No rule named `year`
+
+```php
+// ❌ crashes: Method validateYear does not exist
+'batch' => ['required', 'year', 'min:2020'],
+
+// ✅
+'batch' => ['required', 'integer', 'digits:4', 'min:2020', 'max:' . (date('Y') + 1)],
+```
+
+`min`/`max` on a **string** = character length. On an **integer** = numeric value.
+
+#### Partial update with `sometimes`
+
+```php
+'name'  => ['sometimes', 'required', 'string', 'min:2'],
+'email' => ['sometimes', 'required', 'email', 'unique:students,email,' . $student->id],
+'batch' => ['sometimes', 'required', 'integer', 'digits:4', 'min:2020', 'max:' . (date('Y') + 1)],
+```
+
+`sometimes` = validate only if the field is present → allows sending only `{ "name": "sams" }`.
+
+---
+
+### 7. Postman gotchas (very common)
+
+#### A) PUT/PATCH + `form-data` often sends an empty body
+
+PHP often does **not** parse multipart `form-data` on PUT/PATCH.
+
+Result with `sometimes` rules:
+
+1. `$validated = []`
+2. `$student->update([])` “succeeds”
+3. Response says `"Student updated"` but data is **unchanged**
+
+**Fix:** Body → **raw** → **JSON** (or `x-www-form-urlencoded`), plus headers:
+
+```http
+Accept: application/json
+Content-Type: application/json
+```
+
+```json
+{ "name": "sams" }
+```
+
+This project returns **422** with a hint if `$validated` is empty.
+
+#### B) Always set `Accept: application/json`
+
+Helps validation errors return **422 JSON** instead of redirects/HTML.
+
+---
+
+### 8. Status codes to know
+
+| Code | Meaning | When |
+| ---- | ------- | ---- |
+| 200 | OK | Successful GET / PUT / PATCH / DELETE with body |
+| 201 | Created | Successful POST create |
+| 204 | No Content | Success, empty body (optional for DELETE) |
+| 401 | Unauthorized | Auth required / bad token |
+| 403 | Forbidden | Authenticated but not allowed |
+| 404 | Not Found | Missing model / URL |
+| 422 | Unprocessable | Validation failed |
+| 500 | Server Error | Bug / uncaught exception |
+
+---
+
+### 9. Sanctum (installed in this project — next step for auth)
+
+Package: `laravel/sanctum` (already in `composer.json`). Token table migration exists under `database/migrations`.
+
+**Idea:** protect routes so only clients with a valid token can call them.
+
+```php
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', fn (\Illuminate\Http\Request $r) => $r->user());
+});
+```
+
+Client header:
+
+```http
+Authorization: Bearer {token}
+```
+
+Public demos (`/api/hello`, `/api/students`, …) stay open for learning. Wrap routes when you practice auth.
+
+---
+
+### 10. Postman / curl cheat sheet
+
+```bash
+# List students
+curl -H "Accept: application/json" http://127.0.0.1:8000/api/students
+
+# Create student
+curl -X POST http://127.0.0.1:8000/api/add-student \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"Ali\",\"email\":\"ali@example.com\",\"batch\":2024}"
+
+# Partial update (JSON body — not form-data)
+curl -X PUT http://127.0.0.1:8000/api/students/1 \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"sams\"}"
+
+# Delete
+curl -X DELETE http://127.0.0.1:8000/api/delete-student/1 \
+  -H "Accept: application/json"
+```
+
+```bash
+php artisan route:list --path=api
+php artisan serve
+```
+
+---
+
+### Q/A
+
+- **Q: Can web and API share models?**  
+  A: Yes — same `User` / `Student`, same database.
+- **Q: Do APIs need route model binding?**  
+  A: Not required, but recommended. Binding is not HTML-only; missing models become **404 JSON** on `/api/*` in this project.
+- **Q: Why did PUT only change nothing when I sent `name`?**  
+  A: Usually Postman **form-data** on PUT was not parsed → empty `$validated` → `update([])`. Use raw JSON.
+- **Q: Why is the name UPPERCASE in the JSON response?**  
+  A: `Student::getNameAttribute()` accessor formats output. DB may store mixed case.
+- **Q: `update()` or `save()`?**  
+  A: Both Eloquent. Prefer `update($validated)` for request-driven updates; use `save()` when you set fields manually in code.
+- **Q: Why not `DB::table()` for students?**  
+  A: It skips mutators, `$fillable`, and model events. Fine for reports; not ideal for normal CRUD.
+- **Q: Why `/api` prefix?**  
+  A: Laravel adds it automatically when you register the `api:` routes file.
+- **Q: Is this the same as `Http::get`?**  
+  A: No. That **consumes** an API; `api.php` **provides** one.
+- **Q: Soft deletes?**  
+  A: Add `$table->softDeletes()` + `SoftDeletes` trait. Then `delete()` sets `deleted_at` instead of removing the row. See comments at bottom of `ApiLearningController.php`.
+
+**Files:**  
+`routes/api.php` · `ApiLearningController.php` · `bootstrap/app.php` · `resources/views/api_learning/index.blade.php` · `config/sanctum.php` · `Student.php` / `User.php`
+
+**Try:** `/api-learning` · `/api/hello` · `/api/students` · `PUT /api/students/1` with JSON `{ "name": "sams" }`
+
+---
+
 ## New Routes Quick List
 
 | Area                 | Example URLs                                             |
@@ -2802,7 +3120,8 @@ Example: `/user-route-model-binding/Ali` → `User` where `name = 'Ali'`.
 | Many-to-Many         | `/many-to-many`, attach/detach/sync/toggle, `/teams`   |
 | Mail / Email         | `/email` (form) · POST `/send-email`                   |
 | Fluent Strings       | `/fluent-string`                                       |
-| Route Model Binding  | `/user-route-model-binding/{user:name}`                |
+| Route Model Binding  | `/user-route-model-binding/{user:name}` · `/rmb`     |
+| API (JSON)           | `/api-learning` · `/api/hello` · `/api/users` · `/api/students` |
 
 ---
 
@@ -2827,6 +3146,10 @@ Example: `/user-route-model-binding/Ali` → `User` where `name = 'Ali'`.
 | `FluentStringController.php`                           | Fluent Strings / Stringable demo   |
 | `resources/views/fluent_string/index.blade.php`        | Fluent string method results UI    |
 | `RouteModelBindingController.php`                      | Implicit route model binding       |
+| `routes/api.php` + `ApiLearningController.php`         | Build JSON API in same project     |
+| `resources/views/api_learning/index.blade.php`         | API learning hub                   |
+| `bootstrap/app.php` (`shouldRenderJsonWhen`)           | Force JSON errors on `/api/*`      |
+| `config/sanctum.php` + personal_access_tokens migration| API token auth (Sanctum)           |
 | `AllrouteController.php`                               | HTTP methods                       |
 | `RequestMethodsController.php`                         | Request API                        |
 | `SessionsController.php`                               | Session & flash                    |

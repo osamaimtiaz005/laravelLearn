@@ -2,6 +2,7 @@
 /*<?php  this is php code file where we can write php code for backend in Laravel Framework we call this php code file*/
 
 use App\Http\Controllers\AccessorController;
+use App\Http\Controllers\ApiLearningController;
 use App\Http\Controllers\AllrouteController;
 use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
@@ -1284,3 +1285,30 @@ Route::get('/rmb/missing/{user}', [RouteModelBindingController::class, 'showImpl
             ->with('error', 'That user was not found. The route missing() callback handled the 404.');
     })
     ->name('rmb.missing');
+
+/*
+|--------------------------------------------------------------------------
+| API LEARNING (hub page is WEB; real endpoints are in routes/api.php)
+|--------------------------------------------------------------------------
+| WHAT: Same Laravel project can serve Blade pages AND JSON APIs.
+|
+| Hub (HTML guide):  GET /api-learning
+| Real API file:     routes/api.php  → URLs start with /api/...
+| Wired in:          bootstrap/app.php  → withRouting( api: ... )
+|
+| Difference from httpController:
+|   httpController  = YOUR app CALLS an external API (Http::get)
+|   api.php routes  = YOUR app PROVIDES an API for others to call
+|
+| Try:
+|   /api-learning          → explanation + links
+|   /api/hello             → JSON
+|   /api/users             → JSON list
+|   Postman POST /api/users → create user as JSON
+|
+| Controllers / views:
+|   ApiLearningController
+|   resources/views/api_learning/index.blade.php
+*/
+Route::get('/api-learning', [ApiLearningController::class, 'index'])
+    ->name('api.learning');
