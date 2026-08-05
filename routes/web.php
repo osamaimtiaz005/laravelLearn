@@ -4,6 +4,7 @@
 use App\Http\Controllers\AccessorController;
 use App\Http\Controllers\ApiLearningController;
 use App\Http\Controllers\AllrouteController;
+use App\Http\Controllers\StudentResourceController;
 use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\ElqQueryBuilder;
@@ -1312,3 +1313,21 @@ Route::get('/rmb/missing/{user}', [RouteModelBindingController::class, 'showImpl
 */
 Route::get('/api-learning', [ApiLearningController::class, 'index'])
     ->name('api.learning');
+
+/*
+|--------------------------------------------------------------------------
+| RESOURCE CONTROLLER LEARNING
+|--------------------------------------------------------------------------
+| Hub: GET /resource-controller
+| API: Route::apiResource('rsc-students', ...) in routes/api.php
+|      → /api/rsc-students ...
+|
+| Artisan:
+|   php artisan make:controller X --resource   (7 methods, web forms)
+|   php artisan make:controller X --api        (5 methods, JSON)
+|
+| Class: StudentResourceController
+| View:  resources/views/resource_controller/index.blade.php
+*/
+Route::get('/resource-controller', [StudentResourceController::class, 'learning'])
+    ->name('resource.controller');

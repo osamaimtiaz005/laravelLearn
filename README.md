@@ -936,13 +936,23 @@ Short plain-English guide for every topic practiced in this repo.
 - **Demo hub:** `GET /api-learning`
 - **Try:** `/api/hello` · `/api/users` · `/api/students` · `PUT /api/students/{student}`
 
+### 21. Resource Controller (`resource-controller`)
+
+- **What:** A controller with standard CRUD methods; Laravel registers matching REST routes in one line.
+- **Key ideas:** `make:controller --resource` (7 methods) · `--api` (5 methods) · `Route::resource` vs `Route::apiResource` · `index/store/show/update/destroy` · `only()` / `except()` · nested resources
+- **Problem it solves:** Writing 5–7 nearly identical route lines by hand.
+- **Why:** Clear convention — every developer knows where list/create/update/delete live.
+- **Demo hub:** `GET /resource-controller`
+- **Try:** `/api/rsc-students` · `/api/rsc-students/{id}`
+
 ### How topics connect (big picture)
 
 ```
 URL request
   → Route (web.php HTML  OR  api.php JSON)
+       including Route::resource / apiResource shortcuts
   → Middleware (web session/CSRF  OR  api throttle)
-  → Controller (logic)
+  → Controller (logic) — often a Resource Controller
   → Validation (if input)
   → Model / Database (if data)
   → Blade view  OR  response()->json(...)
@@ -3100,6 +3110,178 @@ php artisan serve
 
 ---
 
+## AD. Resource Controller (full lesson)
+
+**Explain:** A **resource controller** uses standard CRUD method names. Laravel then creates the matching REST routes with **one line** (`Route::resource` or `Route::apiResource`) instead of writing each `Route::get/post/put/delete` yourself.
+
+**Hub:** `/resource-controller`  
+**Working API:** `/api/rsc-students` → `StudentResourceController`  
+**Command used here:** `php artisan make:controller StudentResourceController --api`
+
+---
+
+### 1. Artisan: `--resource` vs `--api`
+
+```bash
+# Web resource — 7 methods (includes HTML form actions)
+php artisan make:controller PhotoController --resource
+
+# API resource — 5 methods (no create/edit forms)  ← this project
+php artisan make:controller StudentResourceController --api
+
+# Also inject model type-hints in signatures
+php artisan make:controller PhotoController --resource --model=Photo
+```
+
+| | `--resource` | `--api` |
+| - | ------------ | ------- |
+| Methods | index, **create**, store, show, **edit**, update, destroy | index, store, show, update, destroy |
+| Typical register | `Route::resource(...)` in `web.php` | `Route::apiResource(...)` in `api.php` |
+| Returns | Blade views + redirects | JSON |
+| create / edit | Show HTML forms | Not needed (client has UI) |
+
+---
+
+### 2. Method map (REST)
+
+| Method | HTTP | URL idea | Job |
+| ------ | ---- | -------- | --- |
+| `index` | GET | `/photos` | List many |
+| `create` | GET | `/photos/create` | Show create form (web only) |
+| `store` | POST | `/photos` | Save new |
+| `show` | GET | `/photos/{photo}` | Show one |
+| `edit` | GET | `/photos/{photo}/edit` | Show edit form (web only) |
+| `update` | PUT/PATCH | `/photos/{photo}` | Save changes |
+| `destroy` | DELETE | `/photos/{photo}` | Delete |
+
+**Naming tip:** controller action = `destroy()`; Eloquent call = `$photo->delete()`.
+
+---
+
+### 3. Registering routes (one line)
+
+```php
+// WEB (7 routes) — routes/web.php
+Route::resource('photos', PhotoController::class);
+
+// API (5 routes) — routes/api.php  (+ automatic /api prefix)
+Route::apiResource('rsc-students', StudentResourceController::class)
+    ->parameters(['rsc-students' => 'student']); // {student} for clean binding
+```
+
+**This project’s map:**
+
+| HTTP | URL | Controller method | Named route |
+| ---- | --- | ----------------- | ----------- |
+| GET | `/api/rsc-students` | `index` | `rsc-students.index` |
+| POST | `/api/rsc-students` | `store` | `rsc-students.store` |
+| GET | `/api/rsc-students/{student}` | `show` | `rsc-students.show` |
+| PUT/PATCH | `/api/rsc-students/{student}` | `update` | `rsc-students.update` |
+| DELETE | `/api/rsc-students/{student}` | `destroy` | `rsc-students.destroy` |
+
+Why `rsc-students`? So it does **not** clash with older hand-written `/api/students` routes in `ApiLearningController`. In a real app you normally use `apiResource('students', ...)`.
+
+```bash
+php artisan route:list --path=rsc-students
+```
+
+---
+
+### 4. Manual routes vs resource (same result)
+
+```php
+// Manual (what you wrote earlier while learning)
+Route::get('/students', [C::class, 'getStudents']);
+Route::post('/add-student', [C::class, 'addStudent']);
+Route::put('/students/{student}', [C::class, 'updateStudent']);
+Route::delete('/delete-student/{id}', [C::class, 'deleteStudents']);
+
+// Resource (conventional REST — preferred for new APIs)
+Route::apiResource('students', StudentResourceController::class);
+```
+
+Resource style keeps URLs consistent (`POST /students` not `/add-student`) and names methods the same in every project.
+
+---
+
+### 5. Useful options
+
+```php
+// Only some actions
+Route::apiResource('photos', PhotoController::class)->only(['index', 'show']);
+
+// All except some
+Route::apiResource('photos', PhotoController::class)->except(['destroy']);
+
+// Nested: /api/users/{user}/posts/{post}
+Route::apiResource('users.posts', UserPostController::class);
+
+// Soft-deleted models allowed on binding
+Route::apiResource('photos', PhotoController::class)->withTrashed();
+
+// Rename parameter for binding
+Route::apiResource('rsc-students', StudentResourceController::class)
+    ->parameters(['rsc-students' => 'student']);
+```
+
+---
+
+### 6. Controller sketch (this project)
+
+```php
+class StudentResourceController extends Controller
+{
+    public function index()   { /* list JSON */ }
+    public function store(Request $request) { /* create → 201 */ }
+    public function show(Student $student) { /* one row */ }
+    public function update(Request $request, Student $student) { /* partial update */ }
+    public function destroy(Student $student) { /* delete */ }
+}
+```
+
+Uses the same patterns from the API lesson: validation, `update($validated)`, route model binding, JSON responses.
+
+---
+
+### 7. Postman / curl
+
+```bash
+curl -H "Accept: application/json" http://127.0.0.1:8000/api/rsc-students
+
+curl -X POST http://127.0.0.1:8000/api/rsc-students \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -d "{\"name\":\"Ali\",\"email\":\"ali.rsc@example.com\",\"batch\":2024}"
+
+curl -X PUT http://127.0.0.1:8000/api/rsc-students/1 \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -d "{\"name\":\"sams\"}"
+
+curl -X DELETE http://127.0.0.1:8000/api/rsc-students/1 \
+  -H "Accept: application/json"
+```
+
+---
+
+### Q/A
+
+- **Q: Do I need a resource controller for APIs?**  
+  A: Not required, but it is the Laravel convention for CRUD. Cleaner than many one-off route names.
+- **Q: `--resource` or `--api`?**  
+  A: Blade form apps → `--resource`. JSON/Postman/mobile → `--api`.
+- **Q: Where did `create` and `edit` go?**  
+  A: Only for HTML forms. APIs skip them; the client already has create/edit UI.
+- **Q: `destroy` vs `delete`?**  
+  A: `destroy` = controller action name. `delete()` = Eloquent model method.
+- **Q: Can I still write routes by hand?**  
+  A: Yes. Resource controllers just save repetition and standardize names.
+- **Q: Why `/api/rsc-students` instead of `/api/students`?**  
+  A: Learning only — avoids colliding with earlier student routes. Prefer one `apiResource('students')` in real apps.
+
+**Files:** `StudentResourceController.php` · `routes/api.php` (`apiResource`) · `resources/views/resource_controller/index.blade.php` · hub route in `web.php`  
+**Try:** `/resource-controller` · `/api/rsc-students`
+
+---
+
 ## New Routes Quick List
 
 | Area                 | Example URLs                                             |
@@ -3122,6 +3304,7 @@ php artisan serve
 | Fluent Strings       | `/fluent-string`                                       |
 | Route Model Binding  | `/user-route-model-binding/{user:name}` · `/rmb`     |
 | API (JSON)           | `/api-learning` · `/api/hello` · `/api/users` · `/api/students` |
+| Resource Controller  | `/resource-controller` · `/api/rsc-students`                  |
 
 ---
 
@@ -3148,6 +3331,8 @@ php artisan serve
 | `RouteModelBindingController.php`                      | Implicit route model binding       |
 | `routes/api.php` + `ApiLearningController.php`         | Build JSON API in same project     |
 | `resources/views/api_learning/index.blade.php`         | API learning hub                   |
+| `StudentResourceController.php` + `apiResource`        | Resource controller (API CRUD)     |
+| `resources/views/resource_controller/index.blade.php`  | Resource controller learning hub   |
 | `bootstrap/app.php` (`shouldRenderJsonWhen`)           | Force JSON errors on `/api/*`      |
 | `config/sanctum.php` + personal_access_tokens migration| API token auth (Sanctum)           |
 | `AllrouteController.php`                               | HTTP methods                       |

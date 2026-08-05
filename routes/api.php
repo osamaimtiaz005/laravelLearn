@@ -148,23 +148,40 @@ Route::delete('/delete-student/{id}', [ApiLearningController::class, 'deleteStud
 
 /*
 |--------------------------------------------------------------------------
-| Optional: Route::apiResource explained (commented — do not enable twice)
+| RESOURCE CONTROLLER demo (apiResource)
+|--------------------------------------------------------------------------
+| ONE line registers the full REST map (5 routes, no create/edit HTML):
+|
+|   Route::apiResource('rsc-students', StudentResourceController::class)
+|       ->parameters(['rsc-students' => 'student']);
+|
+| → GET|POST /api/rsc-students
+| → GET|PUT|PATCH|DELETE /api/rsc-students/{student}
+|
+| Why "rsc-students"? Avoids clashing with older hand-written /api/students
+| routes in ApiLearningController. Real apps usually use apiResource('students').
+|
+| Hub page (web): GET /resource-controller
+| Artisan: php artisan make:controller StudentResourceController --api
+*/
+Route::apiResource('rsc-students', \App\Http\Controllers\StudentResourceController::class)
+    ->parameters(['rsc-students' => 'student']);
+
+/*
+|--------------------------------------------------------------------------
+| Optional: Route::apiResource explained (extra notes)
 |--------------------------------------------------------------------------
 |
-| Route::apiResource('posts', PostController::class);
+| only / except:
+|   Route::apiResource('photos', PhotoController::class)->only(['index', 'show']);
+|   Route::apiResource('photos', PhotoController::class)->except(['destroy']);
 |
-| Creates (no create/edit HTML form routes — those are web-only):
-|   GET    /api/posts           → index
-|   POST   /api/posts           → store
-|   GET    /api/posts/{post}    → show
-|   PUT/PATCH /api/posts/{post} → update
-|   DELETE /api/posts/{post}    → destroy
-|
-| Controller method names must match: index, store, show, update, destroy
-|
-| Nested example:
+| Nested:
 |   Route::apiResource('users.posts', UserPostController::class);
 |   → /api/users/{user}/posts ...
+|
+| Web (7 routes including create/edit forms):
+|   Route::resource('photos', PhotoController::class);  // in web.php
 |
 */
 
