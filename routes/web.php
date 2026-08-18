@@ -6,6 +6,7 @@ use App\Http\Controllers\ApiLearningController;
 use App\Http\Controllers\AllrouteController;
 use App\Http\Controllers\StudentResourceController;
 use App\Http\Controllers\SanctumController;
+use App\Http\Controllers\LearningIndexController;
 use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\ElqQueryBuilder;
@@ -84,29 +85,17 @@ function () {
 
 /*
 |--------------------------------------------------------------------------
-| Home
+| LEARNING HOME — main index for beginners
 |--------------------------------------------------------------------------
-| Route::get      — register a route for HTTP GET (browser address bar, links).
-| '/'            — path: site root (nothing after the domain).
-| function ()    — closure = code that runs when this URL + method match.
-| return view()  — response: render a Blade template from resources/views.
-|--------------------------------------------------------------------------
+| GET /       → LearningIndexController@index → resources/views/learning/index.blade.php
+| GET /learn  → same page
+| GET /welcome → original welcome.blade.php (unchanged)
+| GET /home    → original home.blade.php (unchanged)
 */
+Route::get('/', [LearningIndexController::class, 'index'])->name('learning.index');
+Route::get('/learn', [LearningIndexController::class, 'index'])->name('learning.alias');
+Route::view('/welcome', 'welcome')->name('welcome');
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Home Page
-|--------------------------------------------------------------------------
-| Route::get      — register a route for HTTP GET (browser address bar, links).
-| '/home'        — path: home page (nothing after the domain).
-| function ()    — closure = code that runs when this URL + method match.
-| return view()  — response: render a Blade template from resources/views.
-|--------------------------------------------------------------------------
-*/
 Route::get('/home', function () {
     return view('home');
 });

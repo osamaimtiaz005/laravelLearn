@@ -739,8 +739,21 @@ Each feature/topic was developed on its own branch, then merged into `main`. Tip
 | `pagination`              | `ffccd21`  | `paginate()`, page links, `?page=`                                        |
 | `LayoutCssJs`             | `99962c1`  | Shared Blade layout + CSS/JS assets + dynamic dashboard                   |
 | `migrations`              | `f0954fd`  | Create/alter/drop tables, `up`/`down`, rollback, migrate commands         |
-| `main` (seeders)          | `7a8909b`  | `studentSeeder` + call from `DatabaseSeeder`, seed commands               |
-| `main`                    | `7a8909b`  | Latest full learning path (includes everything above)                     |
+| `seeder`                  | —          | `studentSeeder` + `DatabaseSeeder`                                        |
+| `Accessor_Mutators`       | —          | Accessors & mutators on `Student` (`/accessors`)                          |
+| `Relation_1-1`            | —          | One-to-one User ↔ Profile (`/one-to-one`)                                 |
+| `Relation_1-M`            | —          | One-to-many User → Order (`/one-to-many`)                                 |
+| `Relation_M-1`            | —          | Many-to-one Order → User (`/many-to-one`)                                 |
+| `Relation_M-M`            | —          | Many-to-many User ↔ Role (`/many-to-many`)                                |
+| `send-email`              | —          | Mailable `WelcomeMail` (`/email`)                                         |
+| `fluent-string`           | —          | `Str::of()` / Stringable (`/fluent-string`)                               |
+| `route-model-binding`     | —          | Implicit/explicit binding (`/rmb`)                                        |
+| `Api-crud`                | —          | JSON APIs in this app (`/api-learning`)                                   |
+| `resource-controller`     | —          | `Route::apiResource` (`/resource-controller`)                             |
+| `sanctum`                 | —          | User login/signup tokens (`/sanctum`)                                     |
+| `main`                    | —          | Full learning path + beginner home `/`                                    |
+
+Beginner click-through map: **GET `/`** (`resources/views/learning/index.blade.php`).
 
 ---
 
@@ -3442,6 +3455,7 @@ php artisan migrate
 
 | Area                 | Example URLs                                             |
 | -------------------- | -------------------------------------------------------- |
+| Learning home        | `/` · `/learn` (this project's index of every topic)     |
 | HTTP Client          | `/http-controller`                                       |
 | Query Builder        | `/db-query-builder/all`, `/byid/{id}`, search/sort       |
 | Eloquent             | `/elqQueryBuilder/studentList`, add/update/delete/search |
@@ -3469,7 +3483,7 @@ php artisan migrate
 
 | File                                                   | Topic                              |
 | ------------------------------------------------------ | ---------------------------------- |
-| `httpController.php`                                   | HTTP client / API                  |
+| `LearningIndexController.php` + `learning/index.blade.php` | Beginner home — links every demo |
 | `DBQueryController.php`                                | Query Builder                      |
 | `ElqQueryBuilder.php` + `Student.php`                  | Eloquent CRUD                      |
 | `AccessorController.php` + `MutatorController.php`     | Accessors & mutators               |
