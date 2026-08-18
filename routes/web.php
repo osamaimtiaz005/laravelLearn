@@ -5,6 +5,7 @@ use App\Http\Controllers\AccessorController;
 use App\Http\Controllers\ApiLearningController;
 use App\Http\Controllers\AllrouteController;
 use App\Http\Controllers\StudentResourceController;
+use App\Http\Controllers\SanctumController;
 use App\Http\Controllers\Customer_dbController;
 use App\Http\Controllers\DBQueryController;
 use App\Http\Controllers\ElqQueryBuilder;
@@ -1331,3 +1332,23 @@ Route::get('/api-learning', [ApiLearningController::class, 'index'])
 */
 Route::get('/resource-controller', [StudentResourceController::class, 'learning'])
     ->name('resource.controller');
+
+/*
+|--------------------------------------------------------------------------
+| SANCTUM AUTH LEARNING (hub is WEB; APIs are in routes/api.php)
+|--------------------------------------------------------------------------
+| Hub: GET /sanctum
+| APIs:
+|   POST /api/auth/register
+|   POST /api/auth/login
+|   GET  /api/auth/me            (auth:sanctum)
+|   GET  /api/auth/tokens        (auth:sanctum)
+|   POST /api/auth/logout        (auth:sanctum)
+|   POST /api/auth/logout-all    (auth:sanctum)
+|
+| Class: SanctumController
+| Model: User + HasApiTokens
+| View:  resources/views/sanctum/index.blade.php
+*/
+Route::get('/sanctum', [SanctumController::class, 'learning'])
+    ->name('sanctum.learning');

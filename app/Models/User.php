@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * IDE stubs (Intelephense): optional Eloquent args look "required" without these.
@@ -20,8 +21,21 @@ use Illuminate\Notifications\Notifiable;
  */
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    /**
+     * HasApiTokens (Laravel Sanctum) — REQUIRED for API login tokens.
+     *
+     * Adds:
+     *   $user->createToken('postman')     → personal access token (plain text shown ONCE)
+     *   $user->tokens                     → rows in personal_access_tokens
+     *   $user->currentAccessToken()       → token used on this request
+     *   $user->tokens()->delete()         → logout from every device
+     *
+     * Without this trait, createToken() does not exist on User.
+     * Demo: SanctumController + /api/auth/* + hub /sanctum
+     *
+     * @use HasFactory<UserFactory>
+     */
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.

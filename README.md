@@ -945,14 +945,24 @@ Short plain-English guide for every topic practiced in this repo.
 - **Demo hub:** `GET /resource-controller`
 - **Try:** `/api/rsc-students` · `/api/rsc-students/{id}`
 
+### 22. Sanctum auth APIs (`sanctum`)
+
+- **What:** Token login/signup for the **User** model so APIs can require a logged-in user.
+- **Key ideas:** `HasApiTokens` · `createToken()` · `plainTextToken` (shown once) · `auth:sanctum` · `Authorization: Bearer` · logout = delete token · logout-all = delete every token
+- **Problem it solves:** Public APIs cannot tell *who* is calling. Sessions/cookies do not work well for Postman/mobile.
+- **Why:** One User table; web can still use sessions; APIs use tokens.
+- **Not the same as:** `/sessions` (browser cookies) or SPA `/sanctum/csrf-cookie` cookie flow.
+- **Demo hub:** `GET /sanctum`
+- **Try:** `POST /api/auth/register` · `POST /api/auth/login` · `GET /api/auth/me`
+
 ### How topics connect (big picture)
 
 ```
 URL request
   → Route (web.php HTML  OR  api.php JSON)
        including Route::resource / apiResource shortcuts
-  → Middleware (web session/CSRF  OR  api throttle)
-  → Controller (logic) — often a Resource Controller
+  → Middleware (web session/CSRF  OR  api throttle  OR  auth:sanctum)
+  → Controller (logic) — Resource Controller or SanctumController
   → Validation (if input)
   → Model / Database (if data)
   → Blade view  OR  response()->json(...)
@@ -3030,25 +3040,16 @@ Helps validation errors return **422 JSON** instead of redirects/HTML.
 
 ---
 
-### 9. Sanctum (installed in this project — next step for auth)
+### 9. Sanctum (token auth for User)
 
-Package: `laravel/sanctum` (already in `composer.json`). Token table migration exists under `database/migrations`.
-
-**Idea:** protect routes so only clients with a valid token can call them.
+Package is installed. Full lesson: **AE. Sanctum** · hub `/sanctum` · `SanctumController`.
 
 ```php
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', fn (\Illuminate\Http\Request $r) => $r->user());
+    Route::get('/auth/me', [SanctumController::class, 'me']);
 });
+// Header: Authorization: Bearer {token}
 ```
-
-Client header:
-
-```http
-Authorization: Bearer {token}
-```
-
-Public demos (`/api/hello`, `/api/students`, …) stay open for learning. Wrap routes when you practice auth.
 
 ---
 
@@ -3282,6 +3283,161 @@ curl -X DELETE http://127.0.0.1:8000/api/rsc-students/1 \
 
 ---
 
+## AE. Sanctum — login, signup, auth APIs (User)
+
+**Explain:** Sanctum issues **personal access tokens** for the `User` model. After register/login the client stores a token and sends `Authorization: Bearer {token}` on later requests. Middleware `auth:sanctum` turns that token into `$request->user()`.
+
+**Hub:** `/sanctum`  
+**Controller:** `SanctumController` (User only — not Student)  
+**Trait:** `User` uses `HasApiTokens`  
+**Table:** `personal_access_tokens`
+
+---
+
+### 1. Why tokens (not sessions) for these APIs
+
+| | Web sessions (`/sessions`) | Sanctum tokens (this lesson) |
+| - | --- | --- |
+| Client | Browser | Postman, mobile, other servers |
+| Proof | Cookie `laravel-session` | Header `Authorization: Bearer ...` |
+| CSRF | Yes on POST | Not used for this token API |
+| Logout | Destroy session | Delete token row(s) |
+
+Sanctum can also authenticate first-party SPAs with cookies (`/sanctum/csrf-cookie`). **This project’s demos use tokens only.**
+
+---
+
+### 2. Setup in this project
+
+```bash
+composer require laravel/sanctum          # already in composer.json
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+php artisan migrate                       # personal_access_tokens table
+```
+
+```php
+// app/Models/User.php
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable;
+}
+```
+
+Without `HasApiTokens`, `$user->createToken()` does not exist.
+
+---
+
+### 3. Endpoints
+
+| Auth | Method | URL | Action |
+| ---- | ------ | --- | ------ |
+| Public | POST | `/api/auth/register` | Create user + return token (**201**) |
+| Public | POST | `/api/auth/login` | Check password + return token |
+| Bearer | GET | `/api/auth/me` | Current user + current token meta |
+| Bearer | GET | `/api/auth/tokens` | List token **names** (secret is never stored) |
+| Bearer | POST | `/api/auth/logout` | Delete **this** token |
+| Bearer | POST | `/api/auth/logout-all` | Delete **all** tokens for this user |
+
+```php
+Route::post('/auth/register', [SanctumController::class, 'register']);
+Route::post('/auth/login', [SanctumController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/auth/me', [SanctumController::class, 'me']);
+    Route::post('/auth/logout', [SanctumController::class, 'logout']);
+});
+```
+
+---
+
+### 4. Register / login (what happens)
+
+```php
+$user = User::create([...]); // password hashed by User casts() 'hashed'
+$token = $user->createToken('postman')->plainTextToken;
+```
+
+- `plainTextToken` is returned **once**. The DB stores a **hash**.
+- Lost token → login again. You cannot look it up.
+- Each login creates another token (phone + Postman can both stay logged in).
+- **Do not** `Hash::make()` on register here — `password => hashed` would hash twice and login would fail.
+
+Wrong login credentials throw `ValidationException` → **422 JSON** (`email: The provided credentials are incorrect.`).
+
+---
+
+### 5. Calling a protected route (Postman)
+
+```http
+GET /api/auth/me
+Accept: application/json
+Authorization: Bearer 1|xxxxxxxx
+```
+
+No token / bad token → **401 JSON** (forced for `/api/*` in `bootstrap/app.php`).
+
+Logout:
+
+```php
+$request->user()->currentAccessToken()->delete(); // this device
+$request->user()->tokens()->delete();             // every device
+```
+
+---
+
+### 6. curl cheat sheet
+
+```bash
+# Register
+curl -X POST http://127.0.0.1:8000/api/auth/register \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -d "{\"name\":\"Ali\",\"email\":\"ali.sanctum@example.com\",\"password\":\"secret123\"}"
+
+# Login
+curl -X POST http://127.0.0.1:8000/api/auth/login \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -d "{\"email\":\"ali.sanctum@example.com\",\"password\":\"secret123\",\"device_name\":\"postman\"}"
+
+# Me (paste token)
+curl http://127.0.0.1:8000/api/auth/me \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+# Logout this token
+curl -X POST http://127.0.0.1:8000/api/auth/logout \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+```bash
+php artisan route:list --path=auth
+php artisan migrate
+```
+
+---
+
+### Q/A
+
+- **Q: Is this only for User?**  
+  A: Yes in this lesson. Sanctum tokens hang off a model with `HasApiTokens` — we attached it to `User` only, not `Student`.
+- **Q: Session login vs Sanctum?**  
+  A: Sessions use cookies (browsers). Sanctum tokens use a header (APIs). Same `users` table.
+- **Q: Why is the token shown only once?**  
+  A: DB stores a hash. Same idea as passwords.
+- **Q: `logout` vs `logout-all`?**  
+  A: One token vs every token for that user.
+- **Q: Why 401 on `/api/auth/me` in the browser?**  
+  A: The address bar sends no Bearer token. Use Postman with the header.
+- **Q: SPA cookie auth?**  
+  A: Different Sanctum mode (`statefulApi` + CSRF cookie). Not what these `/api/auth/*` demos use.
+
+**Files:** `SanctumController.php` · `User.php` (`HasApiTokens`) · `routes/api.php` · `resources/views/sanctum/index.blade.php` · `config/sanctum.php` · `personal_access_tokens` migration  
+**Try:** `/sanctum` · `POST /api/auth/register` · `GET /api/auth/me` with Bearer token
+
+---
+
 ## New Routes Quick List
 
 | Area                 | Example URLs                                             |
@@ -3305,6 +3461,7 @@ curl -X DELETE http://127.0.0.1:8000/api/rsc-students/1 \
 | Route Model Binding  | `/user-route-model-binding/{user:name}` · `/rmb`     |
 | API (JSON)           | `/api-learning` · `/api/hello` · `/api/users` · `/api/students` |
 | Resource Controller  | `/resource-controller` · `/api/rsc-students`                  |
+| Sanctum auth (User)  | `/sanctum` · `/api/auth/register` · `/api/auth/login` · `/api/auth/me` |
 
 ---
 
@@ -3333,6 +3490,8 @@ curl -X DELETE http://127.0.0.1:8000/api/rsc-students/1 \
 | `resources/views/api_learning/index.blade.php`         | API learning hub                   |
 | `StudentResourceController.php` + `apiResource`        | Resource controller (API CRUD)     |
 | `resources/views/resource_controller/index.blade.php`  | Resource controller learning hub   |
+| `SanctumController.php` + `User` `HasApiTokens`        | API login / signup / Bearer tokens |
+| `resources/views/sanctum/index.blade.php`              | Sanctum learning hub               |
 | `bootstrap/app.php` (`shouldRenderJsonWhen`)           | Force JSON errors on `/api/*`      |
 | `config/sanctum.php` + personal_access_tokens migration| API token auth (Sanctum)           |
 | `AllrouteController.php`                               | HTTP methods                       |

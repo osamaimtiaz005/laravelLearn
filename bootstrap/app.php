@@ -7,6 +7,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\globalMid;
 use App\Http\Middleware\EnsureAccessKey;
+use Illuminate\Auth\AuthenticationException;
 
 /*
 |--------------------------------------------------------------------------
@@ -80,5 +81,18 @@ return Application::configure(basePath: dirname(__DIR__))
         */
         $exceptions->shouldRenderJsonWhen(function ($request, \Throwable $e) {
             return $request->is('api/*') || $request->expectsJson();
+        });
+
+        /*
+        | Missing/invalid Bearer token on /api/* → JSON 401 (not HTML login).
+        | Postman without Authorization hits this on GET /api/auth/me.
+        */
+        $exceptions->render(function (AuthenticationException $e, $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Unauthenticated. Send header: Authorization: Bearer {token}',
+                    'hint' => 'Login at POST /api/auth/login, then paste the token in Postman.',
+                ], 401);
+            }
         });
     })->create();

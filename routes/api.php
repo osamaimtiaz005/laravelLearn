@@ -47,6 +47,7 @@
 
 use App\Http\Controllers\ApiLearningController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SanctumController;
 
 /*
 |--------------------------------------------------------------------------
@@ -169,6 +170,50 @@ Route::apiResource('rsc-students', \App\Http\Controllers\StudentResourceControll
 
 /*
 |--------------------------------------------------------------------------
+| SANCTUM AUTH APIs — User model only (token / Bearer)
+|--------------------------------------------------------------------------
+| Public (no token):
+|   POST /api/auth/register  → SanctumController@register
+|   POST /api/auth/login     → SanctumController@login
+|
+| Protected (header Authorization: Bearer {token}):
+|   GET  /api/auth/me          → current user
+|   GET  /api/auth/tokens      → list token names (not the secret)
+|   POST /api/auth/logout      → delete THIS token
+|   POST /api/auth/logout-all  → delete ALL tokens for this user
+|
+| middleware auth:sanctum:
+|   1. Reads Bearer token
+|   2. Finds hashed row in personal_access_tokens
+|   3. Loads the related User (tokenable)
+|   4. Sets $request->user()
+|   Missing/invalid token → 401 JSON (see bootstrap/app.php)
+|
+| Hub (web): GET /sanctum
+| Model:     User must use HasApiTokens
+| Table:     personal_access_tokens  (php artisan migrate)
+|
+| This is TOKEN auth (Postman/mobile). It is not web session login (/sessions)
+| and not SPA cookie auth (/sanctum/csrf-cookie).
+*/
+Route::post('/auth/register', [SanctumController::class, 'register'])
+    ->name('api.auth.register');
+Route::post('/auth/login', [SanctumController::class, 'login'])
+    ->name('api.auth.login');
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/auth/me', [SanctumController::class, 'me'])
+        ->name('api.auth.me');
+    Route::get('/auth/tokens', [SanctumController::class, 'tokens'])
+        ->name('api.auth.tokens');
+    Route::post('/auth/logout', [SanctumController::class, 'logout'])
+        ->name('api.auth.logout');
+    Route::post('/auth/logout-all', [SanctumController::class, 'logoutAll'])
+        ->name('api.auth.logoutAll');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Optional: Route::apiResource explained (extra notes)
 |--------------------------------------------------------------------------
 |
@@ -182,24 +227,5 @@ Route::apiResource('rsc-students', \App\Http\Controllers\StudentResourceControll
 |
 | Web (7 routes including create/edit forms):
 |   Route::resource('photos', PhotoController::class);  // in web.php
-|
-*/
-
-/*
-|--------------------------------------------------------------------------
-| Auth note (next step — not required for these demos)
-|--------------------------------------------------------------------------
-|
-| Public APIs (hello, list) can stay open.
-| For protected APIs later:
-|   1) composer require laravel/sanctum
-|   2) php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-|   3) migrate
-|   4) Wrap routes:
-|        Route::middleware('auth:sanctum')->group(function () {
-|            Route::get('/me', fn (Request $r) => $r->user());
-|        });
-|
-| Client then sends:  Authorization: Bearer {token}
 |
 */
